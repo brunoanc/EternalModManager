@@ -1,0 +1,97 @@
+name: Build
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  appimage-build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 6.0.x
+
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build AppImage
+      run: |
+        cd appimage
+        chmod +x publish-appimage
+        yes | ./publish-appimage
+
+    - name: Upload AppImage
+      uses: marvinpinto/action-automatic-releases@latest
+      with:
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        prerelease: false
+        files: |
+          ${{ github.workspace }}/appimage/AppImages/EternalModManager-x86_64.AppImage
+
+  snap-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clone repo
+        uses: actions/checkout@v2
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 6.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet publish -c Release -r linux-x64 --self-contained true
+
+      - name: Build snap
+        uses: snapcore/action-build@v1
+
+      - name: Upload snap
+        uses: snapcore/action-publish@v1
+        with:
+          store_login: ${{ secrets.STORE_LOGIN }}
+          snap: ${{ steps.snapcraft.outputs.snap }}
+          release: stable
+  
+  windows-build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Clone repo
+        uses: actions/checkout@v2
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 6.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Build
+        run: dotnet publish -p:PublishSingleFile=true --self-contained false -r win10-x64 -c Release
+
+      - name: Archive Release
+        uses: thedoctor0/zip-release@master
+        with:
+          type: zip
+          directory: ./EternalModManager/bin/Release/net6.0/win10-x64/publish/
+          filename: EternalModManager.zip
+          exclusions: '*.pdb'
+
+      - name: Upload zip
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file_glob: true
+          file: '**/EternalModManager.zip'
+          tag: ${{ github.ref }}
