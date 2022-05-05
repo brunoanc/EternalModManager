@@ -26,7 +26,7 @@ namespace EternalModManager.ViewModels
     public class MainWindowViewModel : ViewModelBase
     {
         // App title
-        public string AppTitle { get; } = $"EternalModManager {Assembly.GetEntryAssembly()!.GetName().Version!.ToString()[..^2]} by PowerBall253";
+        public string AppTitle { get; } = $"EternalModManager v{Assembly.GetEntryAssembly()!.GetName().Version!.ToString()[..^2]} by PowerBall253";
 
         // Bindable mod list for DataGrid
         private readonly ReadOnlyObservableCollection<ModInfo> _modsBindableList;
