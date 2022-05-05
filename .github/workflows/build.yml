@@ -86,7 +86,7 @@ jobs:
         with:
           type: zip
           directory: ./EternalModManager/bin/Release/net6.0/win10-x64/publish/
-          filename: EternalModManager.zip
+          filename: EternalModManager-win64.zip
           exclusions: '*.pdb'
 
       - name: Upload zip
@@ -94,5 +94,5 @@ jobs:
         with:
           repo_token: ${{ secrets.SECRET_TOKEN }}
           file_glob: true
-          file: '**/EternalModManager.zip'
+          file: '**/EternalModManager-win64.zip'
           tag: ${{ github.ref }}
