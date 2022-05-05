@@ -6,10 +6,6 @@ description: A cross platform mod manager for DOOM Eternal, making it easier to 
 grade: stable
 confinement: strict
 
-layout:
-  /usr/share/fonts:
-    bind: $SNAP/usr/share/fonts
-
 parts:
   eternalmodmanager:
     plugin: dump
