@@ -110,7 +110,7 @@ namespace EternalModManager.Views
             // Disable auto update checkbox on Windows
             if (!RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                modInjectorSettings.FindControl<DockPanel>("AUTO_UPDATE")!.IsEnabled = false;
+                modInjectorSettings.FindControl<CheckBox>("AutoUpdateCheckbox")!.IsEnabled = false;
             }
 
             // Disable if settings file doesn't exist
