@@ -227,6 +227,14 @@ namespace EternalModManager.Views
             (DataContext as MainWindowViewModel)!.InitWatcher();
         }
 
+        // Toggle watcher
+        private void ToggleWatcher(bool enable)
+        {
+            (DataContext as MainWindowViewModel)!.ModsFolderWatcher!.EnableRaisingEvents = enable;
+            (DataContext as MainWindowViewModel)!.DisabledModsFolderWatcher!.EnableRaisingEvents = enable; 
+            (DataContext as MainWindowViewModel)!.SettingsFileWatcher!.EnableRaisingEvents = enable;
+        }
+
         // Handle enabling/disabling mods with the checkboxes
         private void ModCheckBox_OnChecked(object? sender, RoutedEventArgs e)
         {
@@ -292,7 +300,7 @@ namespace EternalModManager.Views
         private void ToggleAllCheckBox_OnChecked(object? sender, RoutedEventArgs e)
         {
             // Do not reload mods while we change all
-            (DataContext as MainWindowViewModel)!.ShouldWatcherReloadMods = false;
+            ToggleWatcher(false);
 
             // Enable all mods
             foreach (var mod in (DataContext as MainWindowViewModel)!.ModsList.Items)
@@ -332,13 +340,13 @@ namespace EternalModManager.Views
             }
 
             // Re-enable reloading mods
-            (DataContext as MainWindowViewModel)!.ShouldWatcherReloadMods = true;
+            ToggleWatcher(true);
         }
 
         private void ToggleAllCheckBox_OnUnchecked(object? sender, RoutedEventArgs e)
         {
             // Do not reload mods while we change all
-            (DataContext as MainWindowViewModel)!.ShouldWatcherReloadMods = false;
+            ToggleWatcher(false);
 
             // Disable all mods
             foreach (var mod in (DataContext as MainWindowViewModel)!.ModsList.Items)
@@ -378,7 +386,7 @@ namespace EternalModManager.Views
             }
 
             // Re-enable reloading mods
-            (DataContext as MainWindowViewModel)!.ShouldWatcherReloadMods = true;
+            ToggleWatcher(true);
         }
 
         // Update mod info on selection

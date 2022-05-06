@@ -342,12 +342,12 @@ namespace EternalModManager.ViewModels
         }
 
         // Watchers
-        private FileSystemWatcher? _modsFolderWatcher;
-        private FileSystemWatcher? _disabledModsFolderWatcher;
-        private FileSystemWatcher? _settingsFileWatcher;
+        public FileSystemWatcher? ModsFolderWatcher;
+        public FileSystemWatcher? DisabledModsFolderWatcher;
+        public FileSystemWatcher? SettingsFileWatcher;
 
         // Determines whether mods should be reloaded on filesystem changes
-        public bool ShouldWatcherReloadMods = true;
+        //public bool ShouldWatcherReloadMods = true;
 
         // Init the filesystem watcher
         public void InitWatcher()
@@ -356,21 +356,21 @@ namespace EternalModManager.ViewModels
             CreateModDirectories();
 
             // Init watchers
-            _modsFolderWatcher = new FileSystemWatcher(App.ModsPath)
+            ModsFolderWatcher = new FileSystemWatcher(App.ModsPath)
             {
                 EnableRaisingEvents = true,
                 IncludeSubdirectories = false,
                 Filter = "*.zip"
             };
 
-            _disabledModsFolderWatcher = new FileSystemWatcher(App.DisabledModsPath)
+            DisabledModsFolderWatcher = new FileSystemWatcher(App.DisabledModsPath)
             {
                 EnableRaisingEvents = true,
                 IncludeSubdirectories = false,
                 Filter = "*.zip"
             };
 
-            _settingsFileWatcher = new FileSystemWatcher(App.GamePath)
+            SettingsFileWatcher = new FileSystemWatcher(App.GamePath)
             {
                 EnableRaisingEvents = true,
                 IncludeSubdirectories = false,
@@ -378,20 +378,20 @@ namespace EternalModManager.ViewModels
             };
 
             // Reload mods on filesystem changes
-            _modsFolderWatcher.Changed += OnChanged;
-            _modsFolderWatcher.Created += OnChanged;
-            _modsFolderWatcher.Deleted += OnChanged;
-            _modsFolderWatcher.Renamed += OnChanged;
+            ModsFolderWatcher.Changed += OnChanged;
+            ModsFolderWatcher.Created += OnChanged;
+            ModsFolderWatcher.Deleted += OnChanged;
+            ModsFolderWatcher.Renamed += OnChanged;
 
-            _disabledModsFolderWatcher.Changed += OnChanged;
-            _disabledModsFolderWatcher.Created += OnChanged;
-            _disabledModsFolderWatcher.Deleted += OnChanged;
-            _disabledModsFolderWatcher.Renamed += OnChanged;
+            DisabledModsFolderWatcher.Changed += OnChanged;
+            DisabledModsFolderWatcher.Created += OnChanged;
+            DisabledModsFolderWatcher.Deleted += OnChanged;
+            DisabledModsFolderWatcher.Renamed += OnChanged;
 
-            _settingsFileWatcher.Changed += OnChanged;
-            _settingsFileWatcher.Created += OnChanged;
-            _settingsFileWatcher.Deleted += OnChanged;
-            _settingsFileWatcher.Renamed += OnChanged;
+            SettingsFileWatcher.Changed += OnChanged;
+            SettingsFileWatcher.Created += OnChanged;
+            SettingsFileWatcher.Deleted += OnChanged;
+            SettingsFileWatcher.Renamed += OnChanged;
 
             // Load mods
             ReloadMods();
@@ -400,11 +400,6 @@ namespace EternalModManager.ViewModels
         // Filesystem watcher callback
         private void OnChanged(object sender, FileSystemEventArgs e)
         {
-            if (!ShouldWatcherReloadMods)
-            {
-                return;
-            }
-
             // Load mods
             lock (ModsList)
             {
