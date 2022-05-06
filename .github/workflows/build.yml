@@ -69,6 +69,10 @@ jobs:
   windows-build:
     runs-on: windows-latest
 
+    defaults:
+      run:
+        shell: bash
+
     steps:
       - name: Clone repo
         uses: actions/checkout@v2
@@ -92,10 +96,13 @@ jobs:
           filename: EternalModManager-win64.zip
           exclusions: '*.pdb'
 
+      - name: Rename zip
+        run: mv "**/EternalModManager-win64.zip" "EternalModManager-${GITHUB_REF_NAME:1}-win64.zip"
+
       - name: Upload zip
         uses: svenstaro/upload-release-action@v2
         with:
           repo_token: ${{ secrets.SECRET_TOKEN }}
           file_glob: true
-          file: '**/EternalModManager-win64.zip'
+          file: '**/EternalModManager-*-win64.zip'
           tag: ${{ github.ref }}
