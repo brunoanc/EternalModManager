@@ -328,7 +328,7 @@ namespace EternalModManager.Views
             var result = await MessageBox.Show(this, MessageBox.MessageType.Information,
                 "This will restore your game to vanilla state by restoring the unmodded backed up game files.\n" +
                 "This process might take a while depending on the speed of your disk, so please be patient.\n" +
-                "Are you sure you want to continue?", MessageBox.MessageButtons.YesCancel);
+                "Are you sure you want to continue?", MessageBox.MessageButtons.YesCancel, 170);
 
             if (result != MessageBox.MessageResult.Yes)
             {
@@ -446,7 +446,7 @@ namespace EternalModManager.Views
             var result = await MessageBox.Show(this, MessageBox.MessageType.Warning,
                 "This will delete your backed up game files.\n" +
                 "The next time mods are injected the backups will be re-created, so make sure to verify your game files after doing this.\n" +
-                "Are you sure you want to continue?", MessageBox.MessageButtons.YesCancel);
+                "Are you sure you want to continue?", MessageBox.MessageButtons.YesCancel, 155);
 
             if (result != MessageBox.MessageResult.Yes)
             {

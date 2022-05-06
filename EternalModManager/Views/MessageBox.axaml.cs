@@ -109,9 +109,15 @@ namespace EternalModManager.Views
             _isPointerPressed = true;
         }
 
+        // Window height
+        private static int _height = 140;
+
         // Create and display message box
-        public static async Task<MessageResult> Show(Window parent, MessageType type, string text, MessageButtons buttons)
+        public static async Task<MessageResult> Show(Window parent, MessageType type, string text, MessageButtons buttons, int height = 140)
         {
+            // Set height
+            _height = height;
+
             // Set text
             var msgbox = new MessageBox
             {
@@ -180,6 +186,9 @@ namespace EternalModManager.Views
         {
             AvaloniaXamlLoader.Load(this);
 
+            // Set height
+            Height = _height;
+
             // Remove acrylic blur on light theme
             if (App.Theme.Equals(FluentThemeMode.Light))
             {
@@ -188,18 +197,12 @@ namespace EternalModManager.Views
                 this.FindControl<Panel>("TopLevelPanel")!.Children.Remove(this.FindControl<ExperimentalAcrylicBorder>("AcrylicBorder")!);
             }
 
-            // Make window not maximizable
-            Opened += (_, _) =>
-            {
-                MinWidth = Width;
-                MinHeight = Height;
-                MaxWidth = Width;
-                MaxHeight = Height;
-            };
-
             // OS-specific changes
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
+                // Increase window height by 25 pixels (titlebar size) on Windows
+                Height += 25;
+
                 // Windows requires a custom titlebar due to system chrome issues
                 // Remove default titlebar buttons
                 ExtendClientAreaChromeHints = ExtendClientAreaChromeHints.NoChrome;
@@ -227,6 +230,13 @@ namespace EternalModManager.Views
 
                     // Disable acrylic blur
                     TransparencyLevelHint = WindowTransparencyLevel.None;
+
+                    // Make window not maximizable
+                    CanResize = true;
+                    MinWidth = Width;
+                    MaxWidth = Width;
+                    MinHeight = Height;
+                    MaxHeight = Height;
                 }
             }
         }
