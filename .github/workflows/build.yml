@@ -26,13 +26,16 @@ jobs:
         chmod +x publish-appimage
         yes | ./publish-appimage
 
+    - name: Rename AppImage
+      run: mv "appimage/AppImages/EternalModManager-x86_64.AppImage" "EternalModManager-${GITHUB_REF_NAME:1}-x86_64.AppImage"
+
     - name: Upload AppImage
       uses: marvinpinto/action-automatic-releases@latest
       with:
         repo_token: "${{ secrets.SECRET_TOKEN }}"
         prerelease: false
         files: |
-          ${{ github.workspace }}/appimage/AppImages/EternalModManager-x86_64.AppImage
+          ${{ github.workspace }}/appimage/AppImages/EternalModManager-*-x86_64.AppImage
 
   snap-build:
     runs-on: ubuntu-latest
