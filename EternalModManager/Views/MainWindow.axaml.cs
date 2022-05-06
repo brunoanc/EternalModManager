@@ -62,7 +62,7 @@ namespace EternalModManager.Views
             // OS-specific changes
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                // Increase window height by 25 pixels (titlebar size) on Windows
+                // Increase window height by 25 pixels (titlebar height)
                 Height += 25;
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))

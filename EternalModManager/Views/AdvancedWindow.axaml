@@ -63,7 +63,7 @@
 
                 <!-- Close button for Windows -->
                 <!-- Taken from https://github.com/FrankenApps/Avalonia-CustomTitleBarTemplate -->
-                <Button Name="CloseButton" IsVisible="False" Click="CloseButton_OnClick" CornerRadius="0" Width="46" Height="32" HorizontalAlignment="Right" BorderThickness="0">
+                <Button Name="CloseButton" IsVisible="False" Click="CloseButton_OnClick" CornerRadius="0" Width="46" Height="25" HorizontalAlignment="Right" BorderThickness="0">
                     <Button.Styles>
                         <Style Selector="Button:pointerover /template/ ContentPresenter#PART_ContentPresenter">
                             <Setter Property="Background" Value="#9B1C1C"/>
@@ -78,7 +78,7 @@
                             <Setter Property="Fill" Value="{DynamicResource SystemControlForegroundBaseHighBrush}"/>
                         </Style>
                     </Button.Styles>
-                    <Path Margin="10,5,10,0"
+                    <Path Margin="10 3 10 0"
                           Stretch="Uniform"
                           Data="M1169 1024l879 -879l-145 -145l-879 879l-879 -879l-145 145l879 879l-879 879l145 145l879 -879l879 879l145 -145z">
                     </Path>
