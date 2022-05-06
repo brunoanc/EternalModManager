@@ -6,7 +6,7 @@ namespace EternalModManager.ViewModels
     public class AdvancedWindowViewModel : ViewModelBase
     {
         // Theme name
-        public string OppositeThemeName { get; } = App.Theme.Equals(FluentThemeMode.Dark) ? "light" : "dark";
+        public static string OppositeThemeName => App.Theme.Equals(FluentThemeMode.Dark) ? "light" : "dark";
 
         // Theme colors
         public static Color ThemeColor => App.Theme.Equals(FluentThemeMode.Dark) ? Colors.Black : Colors.White;
