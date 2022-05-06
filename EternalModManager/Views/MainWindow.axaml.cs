@@ -59,29 +59,26 @@ namespace EternalModManager.Views
                 this.FindControl<Panel>("TopLevelPanel")!.Children.Remove(this.FindControl<ExperimentalAcrylicBorder>("AcrylicBorder")!);
             }
 
-            // Make window not maximizable
-            Opened += (_, _) =>
-            {
-                MinWidth = Width;
-                MinHeight = Height;
-                MaxWidth = Width;
-                MaxHeight = Height;
-            };
-
-            // Increase window height by 25 pixels (titlebar size) on Windows
+            // OS-specific changes
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
+                // Increase window height by 25 pixels (titlebar size) on Windows
                 Height += 25;
             }
-
-            // Linux-specific changes
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
                 // Remove title bar
                 this.FindControl<DockPanel>("MainPanel")!.Children.Remove(this.FindControl<TextBlock>("AppTitle")!);
 
                 // Disable acrylic blur
                 TransparencyLevelHint = WindowTransparencyLevel.None;
+
+                // Make window not maximizable
+                CanResize = true;
+                MinWidth = Width;
+                MaxWidth = Width;
+                MinHeight = Height;
+                MaxHeight = Height;
             }
         }
 

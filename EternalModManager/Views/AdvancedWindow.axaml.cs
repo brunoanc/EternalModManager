@@ -38,15 +38,6 @@ namespace EternalModManager.Views
                 this.FindControl<Panel>("TopLevelPanel")!.Children.Remove(this.FindControl<ExperimentalAcrylicBorder>("AcrylicBorder")!);
             }
 
-            // Make window not maximizable
-            Opened += (_, _) =>
-            {
-                MinWidth = Width;
-                MinHeight = Height;
-                MaxWidth = Width;
-                MaxHeight = Height;
-            };
-
             // OS-specific changes
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
@@ -80,6 +71,13 @@ namespace EternalModManager.Views
 
                     // Disable acrylic blur
                     TransparencyLevelHint = WindowTransparencyLevel.None;
+
+                    // Make window not maximizable
+                    CanResize = true;
+                    MinWidth = Width;
+                    MaxWidth = Width;
+                    MinHeight = Height;
+                    MaxHeight = Height;
                 }
             }
         }
