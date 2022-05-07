@@ -35,7 +35,7 @@ jobs:
         repo_token: "${{ secrets.SECRET_TOKEN }}"
         prerelease: false
         files: |
-          ${{ github.workspace }}/appimage/AppImages/EternalModManager-*-x86_64.AppImage
+          ${{ github.workspace }}/EternalModManager-*-x86_64.AppImage
 
   snap-build:
     runs-on: ubuntu-latest
