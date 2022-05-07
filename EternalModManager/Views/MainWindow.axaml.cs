@@ -121,7 +121,7 @@ namespace EternalModManager.Views
             await xpropProcess.WaitForExitAsync();
 
             // Check return code
-            if (xpropProcess.ExitCode == 0)
+            if (xpropProcess.ExitCode != 0)
             {
                 await MessageBox.Show(this, MessageBox.MessageType.Error,
                     "`xprop` is not installed. Install xprop from your package manager, then try again.", MessageBox.MessageButtons.Ok);
