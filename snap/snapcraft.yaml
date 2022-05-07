@@ -12,6 +12,7 @@ parts:
     source: EternalModManager/bin/Release/net6.0/linux-x64/publish
     stage-packages:
       - liblttng-ust0
+      - x11-utils
 
 plugs:
   steam-files:
