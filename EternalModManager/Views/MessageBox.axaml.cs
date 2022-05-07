@@ -117,6 +117,7 @@ namespace EternalModManager.Views
                     try
                     {
                         // Run xprop
+                        string theme = App.Theme.Equals(FluentThemeMode.Dark) ? "dark" : "light";
                         Process process;
 
                         // Check if we're running on flatpak
@@ -126,7 +127,7 @@ namespace EternalModManager.Views
                             process = Process.Start(new ProcessStartInfo
                             {
                                 FileName = "flatpak-spawn",
-                                Arguments = $"--host xprop -name \"{Title}\" -f _GTK_THEME_VARIANT 8u -set _GTK_THEME_VARIANT dark",
+                                Arguments = $"--host xprop -name \"{Title}\" -f _GTK_THEME_VARIANT 8u -set _GTK_THEME_VARIANT {theme}",
                                 UseShellExecute = false,
                                 CreateNoWindow = true,
                                 RedirectStandardOutput = true,
@@ -138,7 +139,7 @@ namespace EternalModManager.Views
                             process = Process.Start(new ProcessStartInfo
                             {
                                 FileName = "xprop",
-                                Arguments = $"-name \"{Title}\" -f _GTK_THEME_VARIANT 8u -set _GTK_THEME_VARIANT dark",
+                                Arguments = $"-name \"{Title}\" -f _GTK_THEME_VARIANT 8u -set _GTK_THEME_VARIANT {theme}",
                                 UseShellExecute = false,
                                 CreateNoWindow = true,
                                 RedirectStandardOutput = true,
