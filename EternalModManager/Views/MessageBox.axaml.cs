@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Avalonia;
@@ -46,10 +47,110 @@ namespace EternalModManager.Views
         // Constructor
         public MessageBox()
         {
+            // Init window components
             InitializeComponent();
+
 #if DEBUG
             this.AttachDevTools();
 #endif
+
+            // Set height
+            Height = _height;
+
+            // Remove acrylic blur on light theme
+            if (App.Theme.Equals(FluentThemeMode.Light))
+            {
+                Background = Brushes.White;
+                TransparencyLevelHint = WindowTransparencyLevel.None;
+                this.FindControl<Panel>("TopLevelPanel")!.Children.Remove(this.FindControl<ExperimentalAcrylicBorder>("AcrylicBorder")!);
+            }
+
+            // OS-specific changes
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                // Increase window height by 32 pixels (titlebar height)
+                Height += 25;
+
+                // Windows requires a custom titlebar due to system chrome issues
+                // Remove default titlebar buttons
+                ExtendClientAreaChromeHints = ExtendClientAreaChromeHints.NoChrome;
+
+                // Make custom close button visible
+                this.FindControl<Button>("CloseButton")!.IsVisible = true;
+
+                // Set drag-and-drop for custom title bar
+                var titleBar = this.FindControl<Panel>("MessageTitleBar")!;
+                titleBar.IsHitTestVisible = true;
+                titleBar.PointerPressed += BeginListenForDrag;
+                titleBar.PointerMoved += HandlePotentialDrag;
+                titleBar.PointerReleased += HandlePotentialDrop;
+            }
+            else
+            {
+                // Remove custom close button for Windows
+                this.FindControl<Panel>("MessageTitleBar")!.Children.Remove(this.FindControl<Button>("CloseButton")!);
+
+                // Linux specific changes
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    // Remove custom title
+                    this.FindControl<Panel>("MessageTitleBar")!.Children.Remove(this.FindControl<TextBlock>("MessageTitle")!);
+
+                    // Disable acrylic blur
+                    TransparencyLevelHint = WindowTransparencyLevel.None;
+
+                    // Make window not maximizable
+                    CanResize = true;
+                    MinWidth = Width;
+                    MaxWidth = Width;
+                    MinHeight = Height;
+                    MaxHeight = Height;
+                }
+            }
+
+            // Add open event handler
+            Opened += async (_, _) =>
+            {
+                // Set dark GTK theme
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    try
+                    {
+                        // Run xprop
+                        Process process;
+
+                        // Check if we're running on flatpak
+                        if (Environment.GetEnvironmentVariable("FLATPAK_ID") != null)
+                        {
+                            // Use flatpak-spawn on flatpak
+                            process = Process.Start(new ProcessStartInfo
+                            {
+                                FileName = "flatpak-spawn",
+                                Arguments = $"--host xprop -name \"{Title}\" -f _GTK_THEME_VARIANT 8u -set _GTK_THEME_VARIANT dark",
+                                UseShellExecute = false,
+                                CreateNoWindow = true,
+                                RedirectStandardOutput = true,
+                                RedirectStandardError = true
+                            })!;
+                        }
+                        else
+                        {
+                            process = Process.Start(new ProcessStartInfo
+                            {
+                                FileName = "xprop",
+                                Arguments = $"-name \"{Title}\" -f _GTK_THEME_VARIANT 8u -set _GTK_THEME_VARIANT dark",
+                                UseShellExecute = false,
+                                CreateNoWindow = true,
+                                RedirectStandardOutput = true,
+                                RedirectStandardError = true
+                            })!;
+                        }
+
+                        await process.WaitForExitAsync();
+                    }
+                    catch { }
+                }
+            };
         }
 
         // Make OK button close the window
@@ -179,66 +280,6 @@ namespace EternalModManager.Views
             parentTopLevelPanel.IsEnabled = true;
 
             return _result;
-        }
-
-        // Initialize window
-        private void InitializeComponent()
-        {
-            AvaloniaXamlLoader.Load(this);
-
-            // Set height
-            Height = _height;
-
-            // Remove acrylic blur on light theme
-            if (App.Theme.Equals(FluentThemeMode.Light))
-            {
-                Background = Brushes.White;
-                TransparencyLevelHint = WindowTransparencyLevel.None;
-                this.FindControl<Panel>("TopLevelPanel")!.Children.Remove(this.FindControl<ExperimentalAcrylicBorder>("AcrylicBorder")!);
-            }
-
-            // OS-specific changes
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                // Increase window height by 32 pixels (titlebar height)
-                Height += 25;
-
-                // Windows requires a custom titlebar due to system chrome issues
-                // Remove default titlebar buttons
-                ExtendClientAreaChromeHints = ExtendClientAreaChromeHints.NoChrome;
-
-                // Make custom close button visible
-                this.FindControl<Button>("CloseButton")!.IsVisible = true;
-
-                // Set drag-and-drop for custom title bar
-                var titleBar = this.FindControl<Panel>("MessageTitleBar")!;
-                titleBar.IsHitTestVisible = true;
-                titleBar.PointerPressed += BeginListenForDrag;
-                titleBar.PointerMoved += HandlePotentialDrag;
-                titleBar.PointerReleased += HandlePotentialDrop;
-            }
-            else
-            {
-                // Remove custom close button for Windows
-                this.FindControl<Panel>("MessageTitleBar")!.Children.Remove(this.FindControl<Button>("CloseButton")!);
-
-                // Linux specific changes
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                {
-                    // Remove custom title
-                    this.FindControl<Panel>("MessageTitleBar")!.Children.Remove(this.FindControl<TextBlock>("MessageTitle")!);
-
-                    // Disable acrylic blur
-                    TransparencyLevelHint = WindowTransparencyLevel.None;
-
-                    // Make window not maximizable
-                    CanResize = true;
-                    MinWidth = Width;
-                    MaxWidth = Width;
-                    MinHeight = Height;
-                    MaxHeight = Height;
-                }
-            }
         }
     }
 }

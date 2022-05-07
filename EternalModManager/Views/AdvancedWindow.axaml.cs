@@ -27,6 +27,10 @@ namespace EternalModManager.Views
             // Init window components
             InitializeComponent();
 
+#if DEBUG
+            this.AttachDevTools();
+#endif
+
             // Load injector settings into UI
             LoadInjectorSettings();
 
@@ -80,6 +84,50 @@ namespace EternalModManager.Views
                     MaxHeight = Height;
                 }
             }
+
+            // Add open event handler
+            Opened += async (_, _) =>
+            {
+                // Set dark GTK theme
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    try
+                    {
+                        // Run xprop
+                        Process process;
+
+                        // Check if we're running on flatpak
+                        if (Environment.GetEnvironmentVariable("FLATPAK_ID") != null)
+                        {
+                            // Use flatpak-spawn on flatpak
+                            process = Process.Start(new ProcessStartInfo
+                            {
+                                FileName = "flatpak-spawn",
+                                Arguments = $"--host xprop -name \"{Title}\" -f _GTK_THEME_VARIANT 8u -set _GTK_THEME_VARIANT dark",
+                                UseShellExecute = false,
+                                CreateNoWindow = true,
+                                RedirectStandardOutput = true,
+                                RedirectStandardError = true
+                            })!;
+                        }
+                        else
+                        {
+                            process = Process.Start(new ProcessStartInfo
+                            {
+                                FileName = "xprop",
+                                Arguments = $"-name \"{Title}\" -f _GTK_THEME_VARIANT 8u -set _GTK_THEME_VARIANT dark",
+                                UseShellExecute = false,
+                                CreateNoWindow = true,
+                                RedirectStandardOutput = true,
+                                RedirectStandardError = true
+                            })!;
+                        }
+
+                        await process.WaitForExitAsync();
+                    }
+                    catch { }
+                }
+            };
         }
 
         // Settings map

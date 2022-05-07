@@ -88,6 +88,46 @@ namespace EternalModManager.Views
         // Handle window open
         private async void OpenHandler(object? sender, EventArgs e)
         {
+            // Set dark GTK theme
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                try
+                {
+                    // Run xprop
+                    Process process;
+
+                    // Check if we're running on flatpak
+                    if (Environment.GetEnvironmentVariable("FLATPAK_ID") != null)
+                    {
+                        // Use flatpak-spawn on flatpak
+                        process = Process.Start(new ProcessStartInfo
+                        {
+                            FileName = "flatpak-spawn",
+                            Arguments = $"--host xprop -name \"{Title}\" -f _GTK_THEME_VARIANT 8u -set _GTK_THEME_VARIANT dark",
+                            UseShellExecute = false,
+                            CreateNoWindow = true,
+                            RedirectStandardOutput = true,
+                            RedirectStandardError = true
+                        })!;
+                    }
+                    else
+                    {
+                        process = Process.Start(new ProcessStartInfo
+                        {
+                            FileName = "xprop",
+                            Arguments = $"-name \"{Title}\" -f _GTK_THEME_VARIANT 8u -set _GTK_THEME_VARIANT dark",
+                            UseShellExecute = false,
+                            CreateNoWindow = true,
+                            RedirectStandardOutput = true,
+                            RedirectStandardError = true
+                        })!;
+                    }
+
+                    await process.WaitForExitAsync();
+                }
+                catch { }
+            }
+
             // If running though snap, make sure steam-files interface is connected
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && Environment.GetEnvironmentVariable("SNAP") != null)
             {
