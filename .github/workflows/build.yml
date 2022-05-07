@@ -97,7 +97,7 @@ jobs:
           exclusions: '*.pdb'
 
       - name: Rename zip
-        run: mv "EternalModManager-win64.zip" "EternalModManager-${GITHUB_REF_NAME:1}-win64.zip"
+        run: mv "./EternalModManager/bin/Release/net6.0/win10-x64/publish/EternalModManager-win64.zip" "EternalModManager-${GITHUB_REF_NAME:1}-win64.zip"
 
       - name: Upload zip
         uses: svenstaro/upload-release-action@v2
