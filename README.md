@@ -16,13 +16,16 @@ A cross platform mod manager for DOOM Eternal, making it easier to set-up and in
 </a>
 
 ### AppImage
-Download the AppImage file from the latest release to your DOOM Eternal directory and run it from there. Alternatively, you can use [AppImageLauncher](https://github.com/TheAssassin/AppImageLauncher) to integrate it into your system.
+
+<a href='https://github.com/PowerBall253/EternalModManager-Avalonia/releases/latest'>
+    <img width='400' alt='Download as an AppImage' src='https://docs.appimage.org/_images/download-appimage-banner.svg' />
+</a>
 
 ### AUR (Arch Linux)
 The app is currently available in the [AUR](https://aur.archlinux.org/packages/eternalmodmanager/). You can use your favorite AUR helper to install it, or download and build manually as described in the [Arch wiki](https://aur.archlinux.org/packages/eternalmodmanager/).
 
 ## Installing on Windows
-Download and extract the latest .zip from the latest release to your DOOM Eternal directory.
+Make sure you have the [.NET 6 Runtime](https://dotnet.microsoft.com/en-us/download) installed, then download and extract the latest .zip from the latest release to your DOOM Eternal directory.
 
 ## Compiling
 First, make sure you have the latest version of the .NET 6 SDK installed. Then clone the repo, and run the following commands:
