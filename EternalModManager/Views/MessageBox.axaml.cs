@@ -234,8 +234,8 @@ namespace EternalModManager.Views
 
             // Disable parent
             var parentTopLevelPanel = parent.FindControl<Panel>("TopLevelPanel")!;
-           parentTopLevelPanel.IsEnabled = false;
-           parentTopLevelPanel.Opacity = 0.7;
+            parentTopLevelPanel.IsEnabled = false;
+            parentTopLevelPanel.Opacity = 0.7;
 
            // Show window
             await msgbox.ShowDialog(parent);
