@@ -45,9 +45,9 @@ namespace EternalModManager.Views
             // OS-specific changes
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                // Increase window height by 25 pixels (titlebar height)
-                Height += 25;
-                ExtendClientAreaTitleBarHeightHint = 25;
+                // Increase window height by 30 pixels (titlebar height)
+                Height += 30;
+                ExtendClientAreaTitleBarHeightHint = 30;
 
                 // Windows requires a custom titlebar due to system chrome issues
                 // Remove default titlebar buttons
