@@ -64,6 +64,7 @@ namespace EternalModManager.Views
             {
                 // Increase window height by 25 pixels (titlebar height)
                 Height += 25;
+                ExtendClientAreaTitleBarHeightHint = 25;
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
@@ -88,51 +89,51 @@ namespace EternalModManager.Views
         // Handle window open
         private async void OpenHandler(object? sender, EventArgs e)
         {
-            // Check if xprop is installed
-            Process xpropProcess;
-
-            // Check if we're running on flatpak
-            if (Environment.GetEnvironmentVariable("FLATPAK_ID") != null)
-            {
-                // Use flatpak-spawn on flatpak
-                xpropProcess = Process.Start(new ProcessStartInfo
-                {
-                    FileName = "flatpak-spawn",
-                    Arguments = $"--host /usr/bin/env sh -c \"command -v xprop\"",
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true
-                })!;
-            }
-            else
-            {
-                xpropProcess = Process.Start(new ProcessStartInfo
-                {
-                    FileName = "/usr/bin/env",
-                    Arguments = $"sh -c \"command -v xprop\"",
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true
-                })!;
-            }
-
-            await xpropProcess.WaitForExitAsync();
-
-            // Check return code
-            if (xpropProcess.ExitCode != 0)
-            {
-                await MessageBox.Show(this, MessageBox.MessageType.Error,
-                    "`xprop` is not installed. Install xprop from your package manager, then try again.", MessageBox.MessageButtons.Ok);
-                Environment.Exit(1);
-            }
-
             // Set dark GTK theme
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
                 try
                 {
+                    // Check if xprop is installed
+                    Process xpropProcess;
+
+                    // Check if we're running on flatpak
+                    if (Environment.GetEnvironmentVariable("FLATPAK_ID") != null)
+                    {
+                        // Use flatpak-spawn on flatpak
+                        xpropProcess = Process.Start(new ProcessStartInfo
+                        {
+                            FileName = "flatpak-spawn",
+                            Arguments = $"--host /usr/bin/env sh -c \"command -v xprop\"",
+                            UseShellExecute = false,
+                            CreateNoWindow = true,
+                            RedirectStandardOutput = true,
+                            RedirectStandardError = true
+                        })!;
+                    }
+                    else
+                    {
+                        xpropProcess = Process.Start(new ProcessStartInfo
+                        {
+                            FileName = "/usr/bin/env",
+                            Arguments = $"sh -c \"command -v xprop\"",
+                            UseShellExecute = false,
+                            CreateNoWindow = true,
+                            RedirectStandardOutput = true,
+                            RedirectStandardError = true
+                        })!;
+                    }
+
+                    await xpropProcess.WaitForExitAsync();
+
+                    // Check return code
+                    if (xpropProcess.ExitCode != 0)
+                    {
+                        await MessageBox.Show(this, MessageBox.MessageType.Error,
+                            "`xprop` is not installed. Install xprop from your package manager, then try again.", MessageBox.MessageButtons.Ok);
+                        Environment.Exit(1);
+                    }
+
                     // Run xprop
                     string theme = App.Theme.Equals(FluentThemeMode.Dark) ? "dark" : "light";
 

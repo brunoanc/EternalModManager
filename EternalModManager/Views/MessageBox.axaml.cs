@@ -70,6 +70,7 @@ namespace EternalModManager.Views
             {
                 // Increase window height by 32 pixels (titlebar height)
                 Height += 25;
+                ExtendClientAreaTitleBarHeightHint = 25;
 
                 // Windows requires a custom titlebar due to system chrome issues
                 // Remove default titlebar buttons
@@ -77,24 +78,18 @@ namespace EternalModManager.Views
 
                 // Make custom close button visible
                 this.FindControl<Button>("CloseButton")!.IsVisible = true;
-
-                // Set drag-and-drop for custom title bar
-                var titleBar = this.FindControl<Panel>("MessageTitleBar")!;
-                titleBar.IsHitTestVisible = true;
-                titleBar.PointerPressed += BeginListenForDrag;
-                titleBar.PointerMoved += HandlePotentialDrag;
-                titleBar.PointerReleased += HandlePotentialDrop;
             }
             else
             {
                 // Remove custom close button for Windows
-                this.FindControl<Panel>("MessageTitleBar")!.Children.Remove(this.FindControl<Button>("CloseButton")!);
+                var titleBar = this.FindControl<Canvas>("MessageTitleBar")!;
+                titleBar.Children.Remove(this.FindControl<Button>("CloseButton")!);
 
                 // Linux specific changes
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                 {
                     // Remove custom title
-                    this.FindControl<Panel>("MessageTitleBar")!.Children.Remove(this.FindControl<TextBlock>("MessageTitle")!);
+                    titleBar.Children.Remove(this.FindControl<TextBlock>("MessageTitle")!);
 
                     // Disable acrylic blur
                     TransparencyLevelHint = WindowTransparencyLevel.None;
@@ -178,37 +173,6 @@ namespace EternalModManager.Views
         private void CloseButton_OnClick(object? sender, RoutedEventArgs e)
         {
             Close();
-        }
-
-        // Custom window drag implementation for Windows
-        // Taken from https://github.com/FrankenApps/Avalonia-CustomTitleBarTemplate
-        private bool _isPointerPressed = false;
-        private PixelPoint _startPosition = new(0, 0);
-        private Point _mouseOffsetToOrigin = new(0, 0);
-
-        private void HandlePotentialDrop(object? sender, PointerReleasedEventArgs e)
-        {
-            var pos = e.GetPosition(this.FindControl<Panel>("MessageTitleBar"));
-            _startPosition = new PixelPoint((int)(_startPosition.X + pos.X - _mouseOffsetToOrigin.X), (int)(_startPosition.Y + pos.Y - _mouseOffsetToOrigin.Y));
-            Position = _startPosition;
-            _isPointerPressed = false;
-        }
-
-        private void HandlePotentialDrag(object? sender, PointerEventArgs e)
-        {
-            if (_isPointerPressed)
-            {
-                var pos = e.GetPosition(this.FindControl<Panel>("MessageTitleBar"));
-                _startPosition = new PixelPoint((int)(_startPosition.X + pos.X - _mouseOffsetToOrigin.X), (int)(_startPosition.Y + pos.Y - _mouseOffsetToOrigin.Y));
-                Position = _startPosition;
-            }
-        }
-
-        private void BeginListenForDrag(object? sender, PointerPressedEventArgs e)
-        {
-            _startPosition = Position;
-            _mouseOffsetToOrigin = e.GetPosition(this.FindControl<Panel>("MessageTitleBar"));
-            _isPointerPressed = true;
         }
 
         // Window height
