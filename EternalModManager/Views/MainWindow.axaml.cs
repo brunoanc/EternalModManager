@@ -230,8 +230,9 @@ namespace EternalModManager.Views
                 }
 
                 // Disable window
-                IsEnabled = false;
-                Opacity = 0.7;
+                var topLevelPanel = this.FindControl<Panel>("TopLevelPanel")!;
+                topLevelPanel.IsEnabled = false;
+                topLevelPanel.Opacity = 0.7;
 
                 // Download release from GitHub
                 string zipPath = Path.Join(App.GamePath, "EternalModInjectorShell.zip");
@@ -264,8 +265,8 @@ namespace EternalModManager.Views
                 }
 
                 // Re-enable window
-                Opacity = 1;
-                IsEnabled = true;
+                topLevelPanel.Opacity = 1;
+                topLevelPanel.IsEnabled = true;
             }
 
             // Write config file
@@ -628,8 +629,9 @@ namespace EternalModManager.Views
                         found = true;
 
                         // Disable UI
-                        IsEnabled = false;
-                        Opacity = 0.7;
+                        var topLevelPanel = this.FindControl<Panel>("TopLevelPanel")!;
+                        topLevelPanel.IsEnabled = false;
+                        topLevelPanel.Opacity = 0.7;
 
                         // Found shell, run injector with it
                         Process injectorProcess;
@@ -668,8 +670,8 @@ namespace EternalModManager.Views
                         await injectorProcess.WaitForExitAsync();
 
                         // Re-enable window
-                        Opacity = 1;
-                        IsEnabled = true;
+                        topLevelPanel.Opacity = 1;
+                        topLevelPanel.IsEnabled = true;
 
                         break;
                     }
@@ -686,8 +688,9 @@ namespace EternalModManager.Views
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 // Disable UI
-                IsEnabled = false;
-                Opacity = 0.7;
+                var topLevelPanel = this.FindControl<Panel>("TopLevelPanel")!;
+                topLevelPanel.IsEnabled = false;
+                topLevelPanel.Opacity = 0.7;
 
                 // Run injector batch file
                 var injectorProcess = Process.Start(new ProcessStartInfo
@@ -695,14 +698,14 @@ namespace EternalModManager.Views
                     FileName = "cmd.exe",
                     WorkingDirectory = App.GamePath,
                     Arguments = $"/c {Path.Join(App.GamePath, "EternalModInjector.bat")}",
-                    UseShellExecute = false,
+                    UseShellExecute = false
                 })!;
 
                 await injectorProcess.WaitForExitAsync();
 
                 // Re-enable window
-                Opacity = 1;
-                IsEnabled = true;
+                topLevelPanel.Opacity = 1;
+                topLevelPanel.IsEnabled = true;
             }
         }
     }

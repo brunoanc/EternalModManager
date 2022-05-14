@@ -228,6 +228,7 @@ namespace EternalModManager.Views
             parentTopLevelPanel.IsEnabled = false;
             parentTopLevelPanel.Opacity = 0.7;
 
+            // Show window
             await advancedWindow.ShowDialog(parent);
 
             // Re-enable parent
@@ -349,8 +350,9 @@ namespace EternalModManager.Views
             }
 
             // Disable window
-            IsEnabled = false;
-            Opacity = 0.7;
+            var topLevelPanel = this.FindControl<Panel>("TopLevelPanel")!;
+            topLevelPanel.IsEnabled = false;
+            topLevelPanel.Opacity = 0.7;
 
             // Set button content to indicate backups are being restored
             var button = this.FindControl<Button>("RestoreBackupsButton")!;
@@ -444,8 +446,8 @@ namespace EternalModManager.Views
             button.Content = "Restore backups";
 
             // Re-enable window
-            Opacity = 1;
-            IsEnabled = true;
+            topLevelPanel.Opacity = 1;
+            topLevelPanel.IsEnabled = true;
 
             // Show success info window
             await MessageBox.Show(this, MessageBox.MessageType.Information, $"{restoredBackups} backups were restored.",
@@ -467,8 +469,9 @@ namespace EternalModManager.Views
             }
 
             // Disable window
-            IsEnabled = false;
-            Opacity = 0.7;
+            var topLevelPanel = this.FindControl<Panel>("TopLevelPanel")!;
+            topLevelPanel.IsEnabled = false;
+            topLevelPanel.Opacity = 0.7;
 
             // Set button content to indicate backups are being deleted
             var button = this.FindControl<Button>("ResetBackupsButton")!;
@@ -589,8 +592,8 @@ namespace EternalModManager.Views
             button.Content = "Reset backups";
 
             // Re-enable window
-            Opacity = 1;
-            IsEnabled = true;
+            topLevelPanel.Opacity = 1;
+            topLevelPanel.IsEnabled = true;
 
             // Show success info window
             await MessageBox.Show(this, MessageBox.MessageType.Information, $"{deletedBackups} backups were deleted.",

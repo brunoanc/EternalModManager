@@ -186,7 +186,7 @@ namespace EternalModManager.ViewModels
         }
 
         // Load the given mod into the list
-        private void LoadModIntoList(string modFile, bool isEnabled, List<ModInfo> bufferModList)
+        private void LoadModIntoList(string modFile, bool isEnabled, bool onlyLoadOnlineSafe, List<ModInfo> bufferModList)
         {
             ModInfo modInfo;
 
@@ -240,7 +240,7 @@ namespace EternalModManager.ViewModels
                 modInfo.OnlineSafetyMessage = "This mod is safe for use in public matches.";
                 modInfo.OnlineSafetyColor = App.Theme.Equals(FluentThemeMode.Dark) ? Brushes.YellowGreen : Brushes.Green;
             }
-            else if (File.Exists(App.InjectorSettingsPath) && File.ReadAllText(App.InjectorSettingsPath).Contains(":ONLINE_SAFE=1")) // Only load online safe mods
+            else if (onlyLoadOnlineSafe)
             {
                 modInfo.OnlineSafetyIcon = '！';
                 modInfo.OnlineSafetyMessage = "This mod is not safe for use in public matches. It will not be loaded.";
@@ -269,16 +269,27 @@ namespace EternalModManager.ViewModels
             // Buffer to store newly loaded mods
             var bufferModList = new List<ModInfo>();
 
+            // Check if only online safe mods should be loaded
+            bool onlyLoadOnlineSafe = false;
+
+            try {
+                if (File.Exists(App.InjectorSettingsPath) && File.ReadAllText(App.InjectorSettingsPath).Contains(":ONLINE_SAFE=1"))
+                {
+                    onlyLoadOnlineSafe = true;
+                }
+            }
+            catch { }
+
             // Get enabled mods
             foreach (var modFile in Directory.EnumerateFiles(App.ModsPath, "*.zip", SearchOption.TopDirectoryOnly))
             {
-                LoadModIntoList(modFile, true, bufferModList);
+                LoadModIntoList(modFile, true, onlyLoadOnlineSafe, bufferModList);
             }
 
             // Get disabled mods
             foreach (var modFile in Directory.EnumerateFiles(App.DisabledModsPath, "*.zip", SearchOption.TopDirectoryOnly))
             {
-                LoadModIntoList(modFile, false, bufferModList);
+                LoadModIntoList(modFile, false, onlyLoadOnlineSafe, bufferModList);
             }
 
             // Sort buffer mod list
