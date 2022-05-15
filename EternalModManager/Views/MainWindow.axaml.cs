@@ -66,7 +66,7 @@ namespace EternalModManager.Views
                 Height += 30;
                 ExtendClientAreaTitleBarHeightHint = 30;
             }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            else
             {
                 // Remove title bar
                 this.FindControl<DockPanel>("MainPanel")!.Children.Remove(this.FindControl<TextBlock>("AppTitle")!);
@@ -567,6 +567,7 @@ namespace EternalModManager.Views
             await AdvancedWindow.ShowWindow(this);
         }
 
+        // Run mod injector script
         private async void RunInjectorButton_OnClick(object? sender, RoutedEventArgs e)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
@@ -636,6 +637,10 @@ namespace EternalModManager.Views
                         // Found shell, run injector with it
                         Process injectorProcess;
 
+                        // Terminal argument to run command
+                        // Why did you have to deprecate -e, GNOME?
+                        string termArg = terminal.Equals("gnome-terminal") ? "--" : "-e";
+
                         // Check if we're running on flatpak
                         if (Environment.GetEnvironmentVariable("FLATPAK_ID") != null)
                         {
@@ -645,7 +650,7 @@ namespace EternalModManager.Views
                                 FileName = "flatpak-spawn",
                                 WorkingDirectory = App.GamePath,
                                 Environment = { { "ETERNALMODMANAGER", "1" } },
-                                Arguments = $"--host {terminal} -e /usr/bin/env bash {Path.Join(App.GamePath, "EternalModInjectorShell.sh")}",
+                                Arguments = $"--host {terminal} {termArg} /usr/bin/env bash {Path.Join(App.GamePath, "EternalModInjectorShell.sh")}",
                                 UseShellExecute = false,
                                 CreateNoWindow = true,
                                 RedirectStandardOutput = true,
@@ -659,7 +664,7 @@ namespace EternalModManager.Views
                                 FileName = terminal,
                                 WorkingDirectory = App.GamePath,
                                 Environment = { { "ETERNALMODMANAGER", "1" } },
-                                Arguments = $"-e /usr/bin/env bash {Path.Join(App.GamePath, "EternalModInjectorShell.sh")}",
+                                Arguments = $"{termArg} /usr/bin/env bash {Path.Join(App.GamePath, "EternalModInjectorShell.sh")}",
                                 UseShellExecute = false,
                                 CreateNoWindow = true,
                                 RedirectStandardOutput = true,

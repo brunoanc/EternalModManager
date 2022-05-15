@@ -52,32 +52,22 @@ namespace EternalModManager.Views
                 // Windows requires a custom titlebar due to system chrome issues
                 // Remove default titlebar buttons
                 ExtendClientAreaChromeHints = ExtendClientAreaChromeHints.NoChrome;
-
-                // Make custom close button visible
-                this.FindControl<Button>("CloseButton")!.IsVisible = true;
             }
             else
             {
-                // Remove custom close button for Windows
-                var titleBar = this.FindControl<Canvas>("AdvancedTitleBar")!;
-                titleBar.Children.Remove(this.FindControl<Button>("CloseButton")!);
+                // Remove custom titlebar for Windows
+                var mainPanel = this.FindControl<DockPanel>("MainPanel")!;
+                mainPanel.Children.Remove(this.FindControl<Canvas>("AdvancedTitleBar")!);
 
-                // Linux specific changes
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                {
-                    // Remove custom title
-                    titleBar.Children.Remove(this.FindControl<TextBlock>("AdvancedTitle")!);
+                // Disable acrylic blur
+                TransparencyLevelHint = WindowTransparencyLevel.None;
 
-                    // Disable acrylic blur
-                    TransparencyLevelHint = WindowTransparencyLevel.None;
-
-                    // Make window not maximizable
-                    CanResize = true;
-                    MinWidth = Width;
-                    MaxWidth = Width;
-                    MinHeight = Height;
-                    MaxHeight = Height;
-                }
+                // Make window not maximizable
+                CanResize = true;
+                MinWidth = Width;
+                MaxWidth = Width;
+                MinHeight = Height;
+                MaxHeight = Height;
             }
 
             // Add open event handler

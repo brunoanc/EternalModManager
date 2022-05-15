@@ -56,7 +56,7 @@
         </ExperimentalAcrylicBorder>
 
         <!-- Main dock panel -->
-        <DockPanel>
+        <DockPanel Name="MainPanel">
             <!-- Window title bar -->
             <Canvas Name="MessageTitleBar" DockPanel.Dock="Top" Margin="0 0 0 25" HorizontalAlignment="Stretch" Background="Transparent">
                 <!-- Window title -->
@@ -66,7 +66,7 @@
 
                 <!-- Close button for Windows -->
                 <!-- Taken from https://github.com/FrankenApps/Avalonia-CustomTitleBarTemplate -->
-                <Button Name="CloseButton" Canvas.Right="0" IsVisible="False" Click="CloseButton_OnClick" CornerRadius="0" Width="46" Height="30" HorizontalAlignment="Right" BorderThickness="0">
+                <Button Canvas.Right="0" Click="CloseButton_OnClick" CornerRadius="0" Width="46" Height="30" HorizontalAlignment="Right" BorderThickness="0">
                     <Button.Styles>
                         <Style Selector="Button:pointerover /template/ ContentPresenter#PART_ContentPresenter">
                             <Setter Property="Background" Value="#9B1C1C"/>
