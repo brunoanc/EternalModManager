@@ -17,7 +17,7 @@ A cross platform mod manager for DOOM Eternal, making it easier to set-up and in
 
 ### AppImage
 
-<a href='https://github.com/PowerBall253/EternalModManager-Avalonia/releases/latest'>
+<a href='https://appimage.github.io/EternalModManager'>
     <img width='400' alt='Download as an AppImage' src='https://docs.appimage.org/_images/download-appimage-banner.svg' />
 </a>
 
