@@ -649,7 +649,7 @@ namespace EternalModManager.Views
                             {
                                 FileName = "flatpak-spawn",
                                 WorkingDirectory = App.GamePath,
-                                Arguments = $"--host --env=ETERNALMODMANAGER=1 {terminal} {termArg} /usr/bin/env bash {Path.Join(App.GamePath, "EternalModInjectorShell.sh")}",
+                                Arguments = $"--host --env=ETERNALMODMANAGER=1 {terminal} {termArg} /usr/bin/env bash \"{Path.Join(App.GamePath, "EternalModInjectorShell.sh")}\"",
                                 UseShellExecute = false,
                                 CreateNoWindow = true,
                                 RedirectStandardOutput = true,
@@ -663,7 +663,7 @@ namespace EternalModManager.Views
                                 FileName = terminal,
                                 WorkingDirectory = App.GamePath,
                                 Environment = { { "ETERNALMODMANAGER", "1" } },
-                                Arguments = $"{termArg} /usr/bin/env bash {Path.Join(App.GamePath, "EternalModInjectorShell.sh")}",
+                                Arguments = $"{termArg} /usr/bin/env bash \"{Path.Join(App.GamePath, "EternalModInjectorShell.sh")}\"",
                                 UseShellExecute = false,
                                 CreateNoWindow = true,
                                 RedirectStandardOutput = true,
