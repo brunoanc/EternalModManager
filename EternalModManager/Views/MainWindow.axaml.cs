@@ -639,7 +639,20 @@ namespace EternalModManager.Views
 
                         // Terminal argument to run command
                         // Why did you have to deprecate -e, GNOME?
-                        string termArg = terminal.Equals("gnome-terminal") ? "--" : "-e";
+                        string termArg;
+
+                        switch (terminal)
+                        {
+                            case "gnome-terminal":
+                                termArg = "--";
+                                break;
+                            case "tilda":
+                                termArg = "-c";
+                                break;
+                            default:
+                                termArg = "-e";
+                                break;
+                        }
 
                         // Check if we're running on flatpak
                         if (Environment.GetEnvironmentVariable("FLATPAK_ID") != null)
@@ -649,7 +662,7 @@ namespace EternalModManager.Views
                             {
                                 FileName = "flatpak-spawn",
                                 WorkingDirectory = App.GamePath,
-                                Arguments = $"--host --env=ETERNALMODMANAGER=1 {terminal} {termArg} /usr/bin/env bash \"{Path.Join(App.GamePath, "EternalModInjectorShell.sh")}\"",
+                                Arguments = $"--host --env=ETERNALMODMANAGER=1 {terminal} {termArg} \"{Path.Join(App.GamePath, "EternalModInjectorShell.sh")}\"",
                                 UseShellExecute = false,
                                 CreateNoWindow = true,
                                 RedirectStandardOutput = true,
@@ -663,7 +676,7 @@ namespace EternalModManager.Views
                                 FileName = terminal,
                                 WorkingDirectory = App.GamePath,
                                 Environment = { { "ETERNALMODMANAGER", "1" } },
-                                Arguments = $"{termArg} /usr/bin/env bash \"{Path.Join(App.GamePath, "EternalModInjectorShell.sh")}\"",
+                                Arguments = $"{termArg} \"{Path.Join(App.GamePath, "EternalModInjectorShell.sh")}\"",
                                 UseShellExecute = false,
                                 CreateNoWindow = true,
                                 RedirectStandardOutput = true,
