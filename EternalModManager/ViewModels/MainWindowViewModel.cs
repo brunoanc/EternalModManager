@@ -72,8 +72,6 @@ namespace EternalModManager.ViewModels
         // Check if mod is online safe
         private bool IsModOnlineSafe(string modPath)
         {
-            bool isSafe = true;
-            bool isModifyingUnsafeResouce = true;
             var assetsInfoJsons = new List<ZipArchiveEntry>();
 
             // Iterate through zip's entries
@@ -124,15 +122,12 @@ namespace EternalModManager.ViewModels
                 }
 
                 // Check if mod is modifying an online-unsafe resource
-                if (_unsafeResourceNameKeywords.Any(keyword => containerName.StartsWith(keyword)))
-                {
-                    isModifyingUnsafeResouce = true;
-                }
+                bool isModifyingUnsafeResouce = _unsafeResourceNameKeywords.Any(keyword => containerName.StartsWith(keyword));
 
                 // Files with .lwo extension are unsafe
-                if (Path.GetExtension(modFileEntry).Contains(".lwo"))
+                if (Path.GetExtension(modFileEntry).Contains(".lwo") && isModifyingUnsafeResouce)
                 {
-                    isSafe = false;
+                    return false;
                 }
 
                 // Allow modification of anything outside 'generated/decls/'
@@ -141,20 +136,11 @@ namespace EternalModManager.ViewModels
                     continue;
                 }
 
-                if (isSafe)
+                // Do not allow mods to modify non-whitelisted files in unsafe resources
+                if (!_onlineSafeModNameKeywords.Any(keyword => modName.Contains(keyword)) && isModifyingUnsafeResouce)
                 {
-                    isSafe = _onlineSafeModNameKeywords.Any(keyword => modName.Contains(keyword));
+                    return false;
                 }
-            }
-
-            if (isSafe)
-            {
-                return true;
-            }
-
-            if (isModifyingUnsafeResouce)
-            {
-                return false;
             }
 
             // Don't allow injecting files into the online-unsafe resources
