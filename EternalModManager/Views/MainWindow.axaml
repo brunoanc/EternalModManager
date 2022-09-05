@@ -132,7 +132,7 @@
                 <TextBlock Margin="5 0 0 0" FontStyle="Italic" Text="{Binding CurrentModInfo.Author}"/>
 
                 <TextBlock Margin="0 10 0 10" Text="Description:"/>
-                <TextBlock Height="60" Margin="5 0 0 0" FontStyle="Italic" Text="{Binding CurrentModInfo.Description}"/>
+                <TextBlock Name="DescriptionTextBlock" Height="60" Margin="5 0 0 0" FontStyle="Italic" Text="{Binding CurrentModInfo.Description}"/>
 
                 <TextBlock Margin="0 10 0 10" Text="Version:"/>
                 <TextBlock Margin="5 0 0 0" FontStyle="Italic" Text="{Binding CurrentModInfo.Version}"/>

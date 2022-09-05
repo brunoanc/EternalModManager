@@ -59,6 +59,16 @@ namespace EternalModManager.Views
                 this.FindControl<Panel>("TopLevelPanel")!.Children.Remove(this.FindControl<ExperimentalAcrylicBorder>("AcrylicBorder")!);
             }
 
+            // Check screen resolution
+            var screen = Screens.ScreenFromPoint(Position)!;
+
+            if (screen.WorkingArea.BottomRight.Y <= 800)
+            {
+                this.FindControl<DataGrid>("ModsList")!.Height -= 50;
+                this.FindControl<TextBlock>("DescriptionTextBlock")!.Height -= 20;
+                Height -= 70;
+            }
+
             // OS-specific changes
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
