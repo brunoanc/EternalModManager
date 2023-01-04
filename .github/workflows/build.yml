@@ -20,6 +20,9 @@ jobs:
     - name: Restore dependencies
       run: dotnet restore
 
+    - name: Install libfuse2
+      run: sudo apt install libfuse2
+
     - name: Build AppImage
       run: |
         cd appimage
