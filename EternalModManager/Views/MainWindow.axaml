@@ -128,7 +128,7 @@
                 <TextBlock Margin="0 10 0 10" Text="Name:"/>
                 <TextBlock Margin="5 0 0 0" FontStyle="Italic" Text="{Binding CurrentModInfo.Name}"/>
 
-                <TextBlock Margin="0 10 0 10" Text="Author(s)"/>
+                <TextBlock Margin="0 10 0 10" Text="Author(s):"/>
                 <TextBlock Margin="5 0 0 0" FontStyle="Italic" Text="{Binding CurrentModInfo.Author}"/>
 
                 <TextBlock Margin="0 10 0 10" Text="Description:"/>
