@@ -25,16 +25,16 @@ A cross platform mod manager for DOOM Eternal, making it easier to set-up and in
 The app is currently available in the [AUR](https://aur.archlinux.org/packages/eternalmodmanager/). You can use your favorite AUR helper to install it, or download and build manually as described in the [Arch wiki](https://aur.archlinux.org/packages/eternalmodmanager/).
 
 ## Installing on Windows
-Make sure you have the [.NET 6 Runtime](https://dotnet.microsoft.com/en-us/download) installed, then download and extract the latest .zip from the latest release to your DOOM Eternal directory.
+Make sure you have the [.NET 7 Runtime](https://dotnet.microsoft.com/en-us/download) installed, then download and extract the latest .zip from the latest release to your DOOM Eternal directory.
 
 ## Compiling
-First, make sure you have the latest version of the .NET 6 SDK installed. Then clone the repo, and run the following commands:
+First, make sure you have the latest version of the .NET 7 SDK installed. Then clone the repo, and run the following commands:
 
 ```
 dotnet build -c Release
 ```
 
-The compiled application will be located in the `EternalModManager/bin/Release/net6.0` folder.
+The compiled application will be located in the `EternalModManager/bin/Release/net7.0` folder.
 
 Optionally, you can run the app with the following command:
 

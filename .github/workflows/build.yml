@@ -15,7 +15,7 @@ jobs:
     - name: Setup .NET
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 6.0.x
+        dotnet-version: 7.0.x
 
     - name: Restore dependencies
       run: dotnet restore
@@ -50,7 +50,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 6.0.x
+          dotnet-version: 7.0.x
 
       - name: Restore dependencies
         run: dotnet restore
@@ -83,7 +83,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 6.0.x
+          dotnet-version: 7.0.x
 
       - name: Restore dependencies
         run: dotnet restore
@@ -95,12 +95,12 @@ jobs:
         uses: thedoctor0/zip-release@master
         with:
           type: zip
-          directory: ./EternalModManager/bin/Release/net6.0/win10-x64/publish/
+          directory: ./EternalModManager/bin/Release/net7.0/win10-x64/publish/
           filename: EternalModManager-win64.zip
           exclusions: '*.pdb'
 
       - name: Rename zip
-        run: mv "./EternalModManager/bin/Release/net6.0/win10-x64/publish/EternalModManager-win64.zip" "EternalModManager-${GITHUB_REF_NAME:1}-win64.zip"
+        run: mv "./EternalModManager/bin/Release/net7.0/win10-x64/publish/EternalModManager-win64.zip" "EternalModManager-${GITHUB_REF_NAME:1}-win64.zip"
 
       - name: Upload zip
         uses: svenstaro/upload-release-action@v2

@@ -9,7 +9,7 @@ confinement: strict
 parts:
   eternalmodmanager:
     plugin: dump
-    source: EternalModManager/bin/Release/net6.0/linux-x64/publish
+    source: EternalModManager/bin/Release/net7.0/linux-x64/publish
     stage-packages:
       - liblttng-ust0
       - x11-utils
