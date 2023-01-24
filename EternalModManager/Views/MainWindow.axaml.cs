@@ -676,6 +676,9 @@ namespace EternalModManager.Views
                                 break;
                         }
 
+                        // Create file to tell the injector we're running from the manager
+                        File.Create(Path.Join(App.GamePath, "ETERNALMODMANAGER"));
+
                         // Check if we're running on flatpak
                         if (Environment.GetEnvironmentVariable("FLATPAK_ID") != null)
                         {
@@ -683,7 +686,7 @@ namespace EternalModManager.Views
                             injectorProcess = Process.Start(new ProcessStartInfo
                             {
                                 FileName = "flatpak-spawn",
-                                Arguments = $"--host --env=ETERNALMODMANAGER=1 {terminal} {termArg} \"{Path.Join(App.GamePath, "EternalModInjectorShell.sh")}\"",
+                                Arguments = $"--host {terminal} {termArg} \"{Path.Join(App.GamePath, "EternalModInjectorShell.sh")}\"",
                                 UseShellExecute = false,
                                 CreateNoWindow = true,
                                 RedirectStandardOutput = true,
@@ -696,7 +699,6 @@ namespace EternalModManager.Views
                             {
                                 FileName = terminal,
                                 WorkingDirectory = App.GamePath,
-                                Environment = { { "ETERNALMODMANAGER", "1" } },
                                 Arguments = $"{termArg} \"{Path.Join(App.GamePath, "EternalModInjectorShell.sh")}\"",
                                 UseShellExecute = false,
                                 CreateNoWindow = true,
