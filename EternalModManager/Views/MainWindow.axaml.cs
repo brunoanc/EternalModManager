@@ -683,7 +683,6 @@ namespace EternalModManager.Views
                             injectorProcess = Process.Start(new ProcessStartInfo
                             {
                                 FileName = "flatpak-spawn",
-                                WorkingDirectory = App.GamePath,
                                 Arguments = $"--host --env=ETERNALMODMANAGER=1 {terminal} {termArg} \"{Path.Join(App.GamePath, "EternalModInjectorShell.sh")}\"",
                                 UseShellExecute = false,
                                 CreateNoWindow = true,
