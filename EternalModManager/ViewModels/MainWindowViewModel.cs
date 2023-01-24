@@ -15,6 +15,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Media;
 using Avalonia.Themes.Fluent;
+using Avalonia.Platform.Storage;
 using DynamicData;
 using DynamicData.Binding;
 using ReactiveUI;
@@ -417,39 +418,39 @@ namespace EternalModManager.ViewModels
             InstallZipsCommand = ReactiveCommand.CreateFromTask(async () =>
             {
                 // Open file dialog
-                var fileDialog = new OpenFileDialog
+                var selection = await (Application.Current!.ApplicationLifetime as ClassicDesktopStyleApplicationLifetime)!.MainWindow!.StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
                 {
                     Title = "Open .zip mod files to install",
                     AllowMultiple = true,
-                    Filters = new List<FileDialogFilter>
+                    FileTypeFilter = new List<FilePickerFileType>
                     {
-                        new()
+                        new("Zip files")
                         {
-                            Name = "Zip files",
-                            Extensions = new List<string>
+                            Patterns = new List<string>
                             {
-                                "zip"
+                                "*.zip"
                             }
+
                         }
                     }
-                };
+                });
 
-                // Get selected files
-                string[]? results = await fileDialog.ShowAsync((Application.Current!.ApplicationLifetime as ClassicDesktopStyleApplicationLifetime)!.MainWindow!);
-
-                if (results == null || results.Length == 0)
+                if (selection.Count == 0)
                 {
                     return;
                 }
 
                 // Copy mods to mods folder
-                foreach (var zipFile in results)
+                foreach (var zipFile in selection)
                 {
-                    try
+                    if (zipFile.TryGetUri(out var uri) && uri.IsAbsoluteUri)
                     {
-                        File.Copy(zipFile, Path.Join(App.ModsPath, Path.GetFileName(zipFile)), false);
+                        try
+                        {
+                            File.Copy(uri.LocalPath, Path.Join(App.ModsPath, Path.GetFileName(uri.LocalPath)), false);
+                        }
+                        catch { }
                     }
-                    catch { }
                 }
             });
 

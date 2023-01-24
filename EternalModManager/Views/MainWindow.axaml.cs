@@ -14,6 +14,7 @@ using Avalonia.Interactivity;
 using Avalonia.VisualTree;
 using Avalonia.Media;
 using Avalonia.Themes.Fluent;
+using Avalonia.Platform.Storage;
 using EternalModManager.Classes;
 using EternalModManager.ViewModels;
 
@@ -24,23 +25,6 @@ namespace EternalModManager.Views
         // MainWindow constructor
         public MainWindow()
         {
-            // Check if game path is set
-            if (String.IsNullOrEmpty(App.GamePath))
-            {
-                // Prompt user for game path
-                var dirDialog = new OpenFolderDialog
-                {
-                    Title = "Open the game directory",
-                };
-
-                var result = Task.Run(async () => await dirDialog.ShowAsync(this)).Result;
-
-                if (!String.IsNullOrEmpty(result))
-                {
-                    App.GamePath = result;
-                }
-            }
-
             // Init window components
             InitializeComponent();
 
@@ -206,6 +190,34 @@ namespace EternalModManager.Views
 
                 // Disable launch injector button (unsupported due to sandboxing restrictions)
                 this.FindControl<Button>("RunInjectorButton")!.IsEnabled = false;
+            }
+
+            // Check if the game path is set
+            if (String.IsNullOrEmpty(App.GamePath))
+            {
+                // Disable main window
+                var topLevelPanel = this.FindControl<Panel>("TopLevelPanel")!;
+                topLevelPanel.IsEnabled = false;
+                topLevelPanel.Opacity = 0.7;
+
+                // Prompt user for game path
+                var selection = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+                {
+                    Title = "Open the game directory",
+                    AllowMultiple = false
+                });
+
+                if (selection.Count > 0)
+                {
+                    if (selection[0].TryGetUri(out var uri) && uri.IsAbsoluteUri)
+                    {
+                        App.GamePath = uri.LocalPath;
+
+                        // Re-enable main window
+                        topLevelPanel.Opacity = 1;
+                        topLevelPanel.IsEnabled = true;
+                    }
+                }
             }
 
             // Check if game path is valid
