@@ -153,6 +153,9 @@ namespace EternalModManager.Views
             // Check if the game path is set
             if (String.IsNullOrEmpty(App.GamePath))
             {
+                // Inform the user
+                await MessageBox.Show(this, MessageBox.MessageType.Information, "Open the DOOM Eternal game directory.", MessageBox.MessageButtons.Ok);
+
                 // Disable main window
                 var topLevelPanel = this.FindControl<Panel>("TopLevelPanel")!;
                 topLevelPanel.IsEnabled = false;
@@ -253,22 +256,25 @@ namespace EternalModManager.Views
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
                 // Check if running in flatpak
-                if (Environment.GetEnvironmentVariable("FLATPAK_ID") != null && !String.IsNullOrEmpty(App.InjectorPath))
+                if (Environment.GetEnvironmentVariable("FLATPAK_ID") != null)
                 {
-                    // Make sure injector exists outside of sandbox
-                    var process = Process.Start(App.CreateProcessStartInfo($"[ -f \"{App.InjectorPath}\" ]", ""))!;
-                    await process.WaitForExitAsync();
-
-                    if (process.ExitCode != 0)
+                    if (!String.IsNullOrEmpty(App.InjectorPath))
                     {
-                        App.InjectorPath = "";
+                        // Make sure injector exists outside of sandbox
+                        var process = Process.Start(App.CreateProcessStartInfo($"[ -f \"{App.InjectorPath}\" ]", ""))!;
+                        await process.WaitForExitAsync();
+
+                        if (process.ExitCode != 0)
+                        {
+                            App.InjectorPath = "";
+                        }
                     }
                 }
                 else
                 {
                     // Get injector path and make sure it exists
                     string injectorPath = Path.Join(App.GamePath, "EternalModInjectorShell.sh");
-                
+
                     if (File.Exists(injectorPath))
                     {
                         App.InjectorPath = injectorPath;
@@ -558,6 +564,9 @@ namespace EternalModManager.Views
                 // Workaround for sandboxing errors on injector
                 if (String.IsNullOrEmpty(App.InjectorPath))
                 {
+                    // Inform the user
+                    await MessageBox.Show(this, MessageBox.MessageType.Information, "Open the mod injector script.", MessageBox.MessageButtons.Ok);
+
                     // Run a file dialog outside of the sandbox with zenity
                     var zenityProcess = Process.Start(App.CreateProcessStartInfo("zenity",
                         "--file-selection --file-filter=EternalModInjectorShell.sh --title=\"Open the injector script\""))!;
