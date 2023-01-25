@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Runtime.InteropServices;
 using System.Text.Encodings.Web;
 using System.Text.Json;
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -79,6 +80,42 @@ namespace EternalModManager.Views
         // Object for locking
         private readonly object _lockingObject = new();
 
+        // Check if program exists on Linux
+        private async Task<bool> LinuxProgramExists(string program)
+        {
+            Process process;
+
+            // Check if we're running on flatpak
+            if (Environment.GetEnvironmentVariable("FLATPAK_ID") != null)
+            {
+                // Use flatpak-spawn on flatpak
+                process = Process.Start(new ProcessStartInfo
+                {
+                    FileName = "flatpak-spawn",
+                    Arguments = $"--host /usr/bin/env sh -c \"command -v {program}\"",
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
+                })!;
+            }
+            else
+            {
+                process = Process.Start(new ProcessStartInfo
+                {
+                    FileName = "/usr/bin/env",
+                    Arguments = $"sh -c \"command -v {program}\"",
+                    UseShellExecute = false,
+                    CreateNoWindow = true,
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true
+                })!;
+            }
+
+            await process.WaitForExitAsync();
+            return process.ExitCode == 0;
+        }
+
         // Handle window open
         private async void OpenHandler(object? sender, EventArgs e)
         {
@@ -88,39 +125,7 @@ namespace EternalModManager.Views
                 try
                 {
                     // Check if xprop is installed
-                    Process xpropProcess;
-
-                    // Check if we're running on flatpak
-                    if (Environment.GetEnvironmentVariable("FLATPAK_ID") != null)
-                    {
-                        // Use flatpak-spawn on flatpak
-                        xpropProcess = Process.Start(new ProcessStartInfo
-                        {
-                            FileName = "flatpak-spawn",
-                            Arguments = $"--host /usr/bin/env sh -c \"command -v xprop\"",
-                            UseShellExecute = false,
-                            CreateNoWindow = true,
-                            RedirectStandardOutput = true,
-                            RedirectStandardError = true
-                        })!;
-                    }
-                    else
-                    {
-                        xpropProcess = Process.Start(new ProcessStartInfo
-                        {
-                            FileName = "/usr/bin/env",
-                            Arguments = $"sh -c \"command -v xprop\"",
-                            UseShellExecute = false,
-                            CreateNoWindow = true,
-                            RedirectStandardOutput = true,
-                            RedirectStandardError = true
-                        })!;
-                    }
-
-                    await xpropProcess.WaitForExitAsync();
-
-                    // Check return code
-                    if (xpropProcess.ExitCode != 0)
+                    if (!(await LinuxProgramExists("xprop")))
                     {
                         await MessageBox.Show(this, MessageBox.MessageType.Error,
                             "`xprop` is not installed. Install xprop from your package manager, then try again.", MessageBox.MessageButtons.Ok);
@@ -128,6 +133,7 @@ namespace EternalModManager.Views
                     }
 
                     // Run xprop
+                    Process xpropProcess;
                     string theme = App.Theme.Equals(FluentThemeMode.Dark) ? "dark" : "light";
 
                     // Check if we're running on flatpak
@@ -612,40 +618,8 @@ namespace EternalModManager.Views
 
                 foreach (var terminal in terminals)
                 {
-                    // Run command -v to see if the shell is installed
-                    Process process;
-
-                    // Check if we're running on flatpak
-                    if (Environment.GetEnvironmentVariable("FLATPAK_ID") != null)
-                    {
-                        // Use flatpak-spawn on flatpak
-                        process = Process.Start(new ProcessStartInfo
-                        {
-                            FileName = "flatpak-spawn",
-                            Arguments = $"--host /usr/bin/env sh -c \"command -v {terminal}\"",
-                            UseShellExecute = false,
-                            CreateNoWindow = true,
-                            RedirectStandardOutput = true,
-                            RedirectStandardError = true
-                        })!;
-                    }
-                    else
-                    {
-                        process = Process.Start(new ProcessStartInfo
-                        {
-                            FileName = "/usr/bin/env",
-                            Arguments = $"sh -c \"command -v {terminal}\"",
-                            UseShellExecute = false,
-                            CreateNoWindow = true,
-                            RedirectStandardOutput = true,
-                            RedirectStandardError = true
-                        })!;
-                    }
-
-                    await process.WaitForExitAsync();
-
-                    // Check return code
-                    if (process.ExitCode == 0)
+                    // Check if the shell is installed
+                    if (await LinuxProgramExists(terminal))
                     {
                         // Found the terminal
                         found = true;
