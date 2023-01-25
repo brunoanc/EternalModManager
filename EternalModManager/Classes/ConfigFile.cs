@@ -5,5 +5,6 @@ namespace EternalModManager.Classes
     {
         public string? Theme { get; set; }
         public string? GamePath { get; set; }
+        public string? InjectorPath { get; set; }
     }
 }

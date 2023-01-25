@@ -83,35 +83,7 @@ namespace EternalModManager.Views
         // Check if program exists on Linux
         private async Task<bool> LinuxProgramExists(string program)
         {
-            Process process;
-
-            // Check if we're running on flatpak
-            if (Environment.GetEnvironmentVariable("FLATPAK_ID") != null)
-            {
-                // Use flatpak-spawn on flatpak
-                process = Process.Start(new ProcessStartInfo
-                {
-                    FileName = "flatpak-spawn",
-                    Arguments = $"--host /usr/bin/env sh -c \"command -v {program}\"",
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true
-                })!;
-            }
-            else
-            {
-                process = Process.Start(new ProcessStartInfo
-                {
-                    FileName = "/usr/bin/env",
-                    Arguments = $"sh -c \"command -v {program}\"",
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true
-                })!;
-            }
-
+            var process = Process.Start(App.CreateProcessStartInfo("/usr/bin/env", $"sh -c \"command -v {program}\""))!;
             await process.WaitForExitAsync();
             return process.ExitCode == 0;
         }
@@ -119,6 +91,14 @@ namespace EternalModManager.Views
         // Handle window open
         private async void OpenHandler(object? sender, EventArgs e)
         {
+            // Check if zenity is installed
+            if (!(await LinuxProgramExists("zenity")))
+            {
+                await MessageBox.Show(this, MessageBox.MessageType.Error,
+                    "`zenity` is not installed. Install zenity from your package manager, then try again.", MessageBox.MessageButtons.Ok);
+                Environment.Exit(1);
+            }
+
             // Set dark GTK theme
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
@@ -133,37 +113,10 @@ namespace EternalModManager.Views
                     }
 
                     // Run xprop
-                    Process xpropProcess;
                     string theme = App.Theme.Equals(FluentThemeMode.Dark) ? "dark" : "light";
-
-                    // Check if we're running on flatpak
-                    if (Environment.GetEnvironmentVariable("FLATPAK_ID") != null)
-                    {
-                        // Use flatpak-spawn on flatpak
-                        xpropProcess = Process.Start(new ProcessStartInfo
-                        {
-                            FileName = "flatpak-spawn",
-                            Arguments = $"--host xprop -name \"{Title}\" -f _GTK_THEME_VARIANT 8u -set _GTK_THEME_VARIANT {theme}",
-                            UseShellExecute = false,
-                            CreateNoWindow = true,
-                            RedirectStandardOutput = true,
-                            RedirectStandardError = true
-                        })!;
-                    }
-                    else
-                    {
-                        xpropProcess = Process.Start(new ProcessStartInfo
-                        {
-                            FileName = "xprop",
-                            Arguments = $"-name \"{Title}\" -f _GTK_THEME_VARIANT 8u -set _GTK_THEME_VARIANT {theme}",
-                            UseShellExecute = false,
-                            CreateNoWindow = true,
-                            RedirectStandardOutput = true,
-                            RedirectStandardError = true
-                        })!;
-                    }
-
-                    await xpropProcess.WaitForExitAsync();
+                    var process = Process.Start(App.CreateProcessStartInfo("xprop",
+                        $"-name \"{Title}\" -f _GTK_THEME_VARIANT 8u -set _GTK_THEME_VARIANT {theme}"))!;
+                    await process.WaitForExitAsync();
                 }
                 catch { }
             }
@@ -296,33 +249,35 @@ namespace EternalModManager.Views
                 topLevelPanel.IsEnabled = true;
             }
 
-            // Write config file
-            var config = new ConfigFile
+            // Get injector path
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                Theme = App.Theme.Equals(FluentThemeMode.Light) ? "Light" : "Dark",
-                GamePath = App.GamePath
-            };
-
-            try
-            {
-                // Serialize config
-                string configJson = JsonSerializer.Serialize(config, new JsonSerializerOptions
+                // Check if running in flatpak
+                if (Environment.GetEnvironmentVariable("FLATPAK_ID") != null && !String.IsNullOrEmpty(App.InjectorPath))
                 {
-                    WriteIndented = true,
-                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                    Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-                });
+                    // Make sure injector exists outside of sandbox
+                    var process = Process.Start(App.CreateProcessStartInfo($"[ -f \"{App.InjectorPath}\" ]", ""))!;
+                    await process.WaitForExitAsync();
 
-                // Create config directory
-                if (!Directory.Exists(Directory.GetParent(App.ConfigPath)!.FullName))
-                {
-                    Directory.CreateDirectory(Directory.GetParent(App.ConfigPath)!.FullName);
+                    if (process.ExitCode != 0)
+                    {
+                        App.InjectorPath = "";
+                    }
                 }
-
-                // Write config file
-                await File.WriteAllTextAsync(App.ConfigPath, configJson);
+                else
+                {
+                    // Get injector path and make sure it exists
+                    string injectorPath = Path.Join(App.GamePath, "EternalModInjectorShell.sh");
+                
+                    if (File.Exists(injectorPath))
+                    {
+                        App.InjectorPath = injectorPath;
+                    }
+                }
             }
-            catch { }
+
+            // Write config file
+            App.SaveConfig();
 
             // Set paths
             App.InjectorSettingsPath = Path.Join(App.GamePath, "EternalModInjector Settings.txt");
@@ -599,6 +554,29 @@ namespace EternalModManager.Views
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
+                // Get real injector path
+                // Workaround for sandboxing errors on injector
+                if (String.IsNullOrEmpty(App.InjectorPath))
+                {
+                    // Run a file dialog outside of the sandbox with zenity
+                    var zenityProcess = Process.Start(App.CreateProcessStartInfo("zenity",
+                        "--file-selection --file-filter=EternalModInjectorShell.sh --title=\"Open the injector script\""))!;
+
+                    // Get output
+                    using var output = new StringReader(await zenityProcess.StandardOutput.ReadToEndAsync());
+                    string? injectorPath = output.ReadLine();
+                    await zenityProcess.WaitForExitAsync();
+
+                    if (zenityProcess.ExitCode != 0 || String.IsNullOrEmpty(injectorPath))
+                    {
+                        return;
+                    }
+
+                    // Save injector path to config
+                    App.InjectorPath = injectorPath;
+                    App.SaveConfig();
+                }
+
                 // List of common terminals
                 List<string> terminals = new()
                 {
@@ -652,34 +630,8 @@ namespace EternalModManager.Views
                         // Create file to tell the injector we're running from the manager
                         File.Create(Path.Join(App.GamePath, "ETERNALMODMANAGER"));
 
-                        // Check if we're running on flatpak
-                        if (Environment.GetEnvironmentVariable("FLATPAK_ID") != null)
-                        {
-                            // Use flatpak-spawn on flatpak
-                            injectorProcess = Process.Start(new ProcessStartInfo
-                            {
-                                FileName = "flatpak-spawn",
-                                Arguments = $"--host {terminal} {termArg} \"{Path.Join(App.GamePath, "EternalModInjectorShell.sh")}\"",
-                                UseShellExecute = false,
-                                CreateNoWindow = true,
-                                RedirectStandardOutput = true,
-                                RedirectStandardError = true
-                            })!;
-                        }
-                        else
-                        {
-                            injectorProcess = Process.Start(new ProcessStartInfo
-                            {
-                                FileName = terminal,
-                                WorkingDirectory = App.GamePath,
-                                Arguments = $"{termArg} \"{Path.Join(App.GamePath, "EternalModInjectorShell.sh")}\"",
-                                UseShellExecute = false,
-                                CreateNoWindow = true,
-                                RedirectStandardOutput = true,
-                                RedirectStandardError = true
-                            })!;
-                        }
-
+                        // Run injector
+                        injectorProcess = Process.Start(App.CreateProcessStartInfo(terminal, $"{termArg} \"{App.InjectorPath}\""))!;
                         await injectorProcess.WaitForExitAsync();
 
                         // Re-enable window

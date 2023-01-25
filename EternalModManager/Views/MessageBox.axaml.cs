@@ -103,35 +103,8 @@ namespace EternalModManager.Views
                     {
                         // Run xprop
                         string theme = App.Theme.Equals(FluentThemeMode.Dark) ? "dark" : "light";
-                        Process process;
-
-                        // Check if we're running on flatpak
-                        if (Environment.GetEnvironmentVariable("FLATPAK_ID") != null)
-                        {
-                            // Use flatpak-spawn on flatpak
-                            process = Process.Start(new ProcessStartInfo
-                            {
-                                FileName = "flatpak-spawn",
-                                Arguments = $"--host xprop -name \"{Title}\" -f _GTK_THEME_VARIANT 8u -set _GTK_THEME_VARIANT {theme}",
-                                UseShellExecute = false,
-                                CreateNoWindow = true,
-                                RedirectStandardOutput = true,
-                                RedirectStandardError = true
-                            })!;
-                        }
-                        else
-                        {
-                            process = Process.Start(new ProcessStartInfo
-                            {
-                                FileName = "xprop",
-                                Arguments = $"-name \"{Title}\" -f _GTK_THEME_VARIANT 8u -set _GTK_THEME_VARIANT {theme}",
-                                UseShellExecute = false,
-                                CreateNoWindow = true,
-                                RedirectStandardOutput = true,
-                                RedirectStandardError = true
-                            })!;
-                        }
-
+                        var process = Process.Start(App.CreateProcessStartInfo("xprop",
+                            $"-name \"{Title}\" -f _GTK_THEME_VARIANT 8u -set _GTK_THEME_VARIANT {theme}"))!;
                         await process.WaitForExitAsync();
                     }
                     catch { }

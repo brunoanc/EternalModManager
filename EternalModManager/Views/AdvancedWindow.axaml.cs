@@ -80,35 +80,8 @@ namespace EternalModManager.Views
                     {
                         // Run xprop
                         string theme = App.Theme.Equals(FluentThemeMode.Dark) ? "dark" : "light";
-                        Process process;
-
-                        // Check if we're running on flatpak
-                        if (Environment.GetEnvironmentVariable("FLATPAK_ID") != null)
-                        {
-                            // Use flatpak-spawn on flatpak
-                            process = Process.Start(new ProcessStartInfo
-                            {
-                                FileName = "flatpak-spawn",
-                                Arguments = $"--host xprop -name \"{Title}\" -f _GTK_THEME_VARIANT 8u -set _GTK_THEME_VARIANT {theme}",
-                                UseShellExecute = false,
-                                CreateNoWindow = true,
-                                RedirectStandardOutput = true,
-                                RedirectStandardError = true
-                            })!;
-                        }
-                        else
-                        {
-                            process = Process.Start(new ProcessStartInfo
-                            {
-                                FileName = "xprop",
-                                Arguments = $"-name \"{Title}\" -f _GTK_THEME_VARIANT 8u -set _GTK_THEME_VARIANT {theme}",
-                                UseShellExecute = false,
-                                CreateNoWindow = true,
-                                RedirectStandardOutput = true,
-                                RedirectStandardError = true
-                            })!;
-                        }
-
+                        var process = Process.Start(App.CreateProcessStartInfo("xprop",
+                            $"-name \"{Title}\" -f _GTK_THEME_VARIANT 8u -set _GTK_THEME_VARIANT {theme}"))!;
                         await process.WaitForExitAsync();
                     }
                     catch { }
@@ -276,32 +249,8 @@ namespace EternalModManager.Views
             }
 
             // Write config file with opposite theme
-            var config = new ConfigFile
-            {
-                Theme = App.Theme.Equals(FluentThemeMode.Light) ? "Dark" : "Light",
-                GamePath = App.GamePath
-            };
-
-            try
-            {
-                // Serialize config
-                string configJson = JsonSerializer.Serialize(config, new JsonSerializerOptions
-                {
-                    WriteIndented = true,
-                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-                    Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-                });
-
-                // Create config directory
-                if (!Directory.Exists(Directory.GetParent(App.ConfigPath)!.FullName))
-                {
-                    Directory.CreateDirectory(Directory.GetParent(App.ConfigPath)!.FullName);
-                }
-
-                // Write config file
-                await File.WriteAllTextAsync(App.ConfigPath, configJson);
-            }
-            catch { }
+            App.Theme = App.Theme.Equals(FluentThemeMode.Light) ? FluentThemeMode.Dark : FluentThemeMode.Light;
+            App.SaveConfig();
 
             // Restart app
             if (Environment.GetEnvironmentVariable("FLATPAK_ID") != null)
