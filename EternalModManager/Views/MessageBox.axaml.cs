@@ -103,8 +103,7 @@ namespace EternalModManager.Views
                     {
                         // Run xprop
                         string theme = App.Theme.Equals(FluentThemeMode.Dark) ? "dark" : "light";
-                        var process = Process.Start(App.CreateProcessStartInfo("xprop",
-                            $"-name \"{Title}\" -f _GTK_THEME_VARIANT 8u -set _GTK_THEME_VARIANT {theme}"))!;
+                        var process = App.RunSystemCommand("xprop", $"-name \"{Title}\" -f _GTK_THEME_VARIANT 8u -set _GTK_THEME_VARIANT {theme}");
                         await process.WaitForExitAsync();
                     }
                     catch { }

@@ -21,9 +21,6 @@ namespace EternalModManager
         // Config path
         public static string ConfigPath = "";
 
-        // Path to injector
-        public static string InjectorPath = "";
-
         // Path to game settings file
         public static string InjectorSettingsPath = "";
 
@@ -43,8 +40,7 @@ namespace EternalModManager
             var config = new ConfigFile
             {
                 Theme = App.Theme.Equals(FluentThemeMode.Light) ? "Light" : "Dark",
-                GamePath = App.GamePath,
-                InjectorPath = App.InjectorPath
+                GamePath = App.GamePath
             };
 
             try
@@ -70,34 +66,17 @@ namespace EternalModManager
         }
 
         // Get process start info for command
-        public static ProcessStartInfo CreateProcessStartInfo(string command, string arguments)
+        public static Process RunSystemCommand(string command, string arguments)
         {
-            // Check if we're running on flatpak
-            if (Environment.GetEnvironmentVariable("FLATPAK_ID") != null)
+            return Process.Start(new ProcessStartInfo
             {
-                // Use flatpak-spawn on flatpak
-                return new ProcessStartInfo
-                {
-                    FileName = "flatpak-spawn",
-                    Arguments = $"--host {command} {arguments}",
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true
-                };
-            }
-            else
-            {
-                return new ProcessStartInfo
-                {
-                    FileName = command,
-                    Arguments = arguments,
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true
-                };
-            }
+                FileName = command,
+                Arguments = arguments,
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true
+            })!;
         }
 
         public override void Initialize()
@@ -154,15 +133,6 @@ namespace EternalModManager
             if (String.IsNullOrEmpty(GamePath) && File.Exists(Path.Join(Directory.GetCurrentDirectory(), "DOOMEternalx64vk.exe")))
             {
                 GamePath = Directory.GetCurrentDirectory();
-            }
-
-            // Get injector path from config file
-            if (config?.InjectorPath != null)
-            {
-                if (Path.GetFileName(config.InjectorPath).Equals("EternalModInjectorShell.sh"))
-                {
-                    InjectorPath = config.InjectorPath;
-                }
             }
 
             // Load xaml

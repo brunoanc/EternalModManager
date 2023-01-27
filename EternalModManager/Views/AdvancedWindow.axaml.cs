@@ -80,8 +80,7 @@ namespace EternalModManager.Views
                     {
                         // Run xprop
                         string theme = App.Theme.Equals(FluentThemeMode.Dark) ? "dark" : "light";
-                        var process = Process.Start(App.CreateProcessStartInfo("xprop",
-                            $"-name \"{Title}\" -f _GTK_THEME_VARIANT 8u -set _GTK_THEME_VARIANT {theme}"))!;
+                        var process = App.RunSystemCommand("xprop", $"-name \"{Title}\" -f _GTK_THEME_VARIANT 8u -set _GTK_THEME_VARIANT {theme}");
                         await process.WaitForExitAsync();
                     }
                     catch { }
@@ -255,16 +254,7 @@ namespace EternalModManager.Views
             // Restart app
             if (Environment.GetEnvironmentVariable("FLATPAK_ID") != null)
             {
-                // Use flatpak-spawn on flatpak
-                Process.Start(new ProcessStartInfo
-                {
-                    FileName = "flatpak-spawn",
-                    Arguments = "--host flatpak run com.powerball253.eternalmodmanager",
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true
-                });
+                Process.Start("/app/bin/run.sh");
             }
             else
             {

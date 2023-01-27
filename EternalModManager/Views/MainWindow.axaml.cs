@@ -83,7 +83,7 @@ namespace EternalModManager.Views
         // Check if program exists on Linux
         private async Task<bool> LinuxProgramExists(string program)
         {
-            var process = Process.Start(App.CreateProcessStartInfo("/usr/bin/env", $"sh -c \"command -v {program}\""))!;
+            var process = App.RunSystemCommand("sh", $"-c \"command -v {program}\"");
             await process.WaitForExitAsync();
             return process.ExitCode == 0;
         }
@@ -91,13 +91,6 @@ namespace EternalModManager.Views
         // Handle window open
         private async void OpenHandler(object? sender, EventArgs e)
         {
-            // Check if zenity is installed
-            if (!(await LinuxProgramExists("zenity")))
-            {
-                await MessageBox.Show(this, MessageBox.MessageType.Error,
-                    "`zenity` is not installed. Install zenity from your package manager, then try again.", MessageBox.MessageButtons.Ok);
-                Environment.Exit(1);
-            }
 
             // Set dark GTK theme
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
@@ -114,15 +107,14 @@ namespace EternalModManager.Views
 
                     // Run xprop
                     string theme = App.Theme.Equals(FluentThemeMode.Dark) ? "dark" : "light";
-                    var process = Process.Start(App.CreateProcessStartInfo("xprop",
-                        $"-name \"{Title}\" -f _GTK_THEME_VARIANT 8u -set _GTK_THEME_VARIANT {theme}"))!;
+                    var process = App.RunSystemCommand("xprop", $"-name \"{Title}\" -f _GTK_THEME_VARIANT 8u -set _GTK_THEME_VARIANT {theme}");
                     await process.WaitForExitAsync();
                 }
                 catch { }
             }
 
             // If running though snap, make sure steam-files interface is connected
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && Environment.GetEnvironmentVariable("SNAP") != null)
+            /*if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && Environment.GetEnvironmentVariable("SNAP") != null)
             {
                 // Run snapctl to verify connection
                 var process = Process.Start(new ProcessStartInfo
@@ -148,7 +140,7 @@ namespace EternalModManager.Views
 
                 // Disable launch injector button (unsupported due to sandboxing restrictions)
                 this.FindControl<Button>("RunInjectorButton")!.IsEnabled = false;
-            }
+            }*/
 
             // Check if the game path is set
             if (String.IsNullOrEmpty(App.GamePath))
@@ -250,36 +242,6 @@ namespace EternalModManager.Views
                 // Re-enable window
                 topLevelPanel.Opacity = 1;
                 topLevelPanel.IsEnabled = true;
-            }
-
-            // Get injector path
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                // Check if running in flatpak
-                if (Environment.GetEnvironmentVariable("FLATPAK_ID") != null)
-                {
-                    if (!String.IsNullOrEmpty(App.InjectorPath))
-                    {
-                        // Make sure injector exists outside of sandbox
-                        var process = Process.Start(App.CreateProcessStartInfo($"[ -f \"{App.InjectorPath}\" ]", ""))!;
-                        await process.WaitForExitAsync();
-
-                        if (process.ExitCode != 0)
-                        {
-                            App.InjectorPath = "";
-                        }
-                    }
-                }
-                else
-                {
-                    // Get injector path and make sure it exists
-                    string injectorPath = Path.Join(App.GamePath, "EternalModInjectorShell.sh");
-
-                    if (File.Exists(injectorPath))
-                    {
-                        App.InjectorPath = injectorPath;
-                    }
-                }
             }
 
             // Write config file
@@ -560,32 +522,6 @@ namespace EternalModManager.Views
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                // Get real injector path
-                // Workaround for sandboxing errors on injector
-                if (String.IsNullOrEmpty(App.InjectorPath))
-                {
-                    // Inform the user
-                    await MessageBox.Show(this, MessageBox.MessageType.Information, "Open the mod injector script.", MessageBox.MessageButtons.Ok);
-
-                    // Run a file dialog outside of the sandbox with zenity
-                    var zenityProcess = Process.Start(App.CreateProcessStartInfo("zenity",
-                        "--file-selection --file-filter=EternalModInjectorShell.sh --title=\"Open the injector script\""))!;
-
-                    // Get output
-                    using var output = new StringReader(await zenityProcess.StandardOutput.ReadToEndAsync());
-                    string? injectorPath = output.ReadLine();
-                    await zenityProcess.WaitForExitAsync();
-
-                    if (zenityProcess.ExitCode != 0 || String.IsNullOrEmpty(injectorPath))
-                    {
-                        return;
-                    }
-
-                    // Save injector path to config
-                    App.InjectorPath = injectorPath;
-                    App.SaveConfig();
-                }
-
                 // List of common terminals
                 List<string> terminals = new()
                 {
@@ -640,7 +576,7 @@ namespace EternalModManager.Views
                         File.Create(Path.Join(App.GamePath, "ETERNALMODMANAGER"));
 
                         // Run injector
-                        injectorProcess = Process.Start(App.CreateProcessStartInfo(terminal, $"{termArg} \"{App.InjectorPath}\""))!;
+                        injectorProcess = App.RunSystemCommand(terminal, $"{termArg} \"{Path.Join(App.GamePath, "EternalModInjectorShell.sh")}\"");
                         await injectorProcess.WaitForExitAsync();
 
                         // Re-enable window

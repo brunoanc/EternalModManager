@@ -1,5 +1,5 @@
 name: eternalmodmanager
-base: core20
+base: core22
 version: '2.1.2'
 summary: Mod manager for DOOM Eternal.
 description: A cross platform mod manager for DOOM Eternal, making it easier to set-up and install mods in both Windows and Linux.
@@ -11,26 +11,17 @@ parts:
     plugin: dump
     source: EternalModManager/bin/Release/net7.0/linux-x64/publish
     stage-packages:
-      - liblttng-ust0
       - x11-utils
-
-plugs:
-  steam-files:
-    interface: personal-files
-    write:
-      - $HOME/.var/app/com.valvesoftware.Steam/steamapps/common/DOOMEternal
-      - $HOME/.local/share/Steam/steamapps/common/DOOMEternal
-      - $HOME/.steam/steam/steamapps/common/DOOMEternal
+      - curl
+      - stterm
 
 apps:
   eternalmodmanager:
     command: EternalModManager
-    extensions: [gnome-3-38]
+    extensions: [gnome]
     plugs:
       - x11
       - desktop
       - network
-      - removable-media
-      - steam-files
     environment:
       DISABLE_WAYLAND: 1
