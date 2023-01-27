@@ -113,35 +113,6 @@ namespace EternalModManager.Views
                 catch { }
             }
 
-            // If running though snap, make sure steam-files interface is connected
-            /*if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && Environment.GetEnvironmentVariable("SNAP") != null)
-            {
-                // Run snapctl to verify connection
-                var process = Process.Start(new ProcessStartInfo
-                {
-                    FileName = "snapctl",
-                    Arguments = "is-connected steam-files",
-                    UseShellExecute = false,
-                    CreateNoWindow = true,
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true
-                })!;
-
-                await process.WaitForExitAsync();
-
-                // Check exit code
-                if (process.ExitCode != 0)
-                {
-                    // Show error and exit
-                    await MessageBox.Show(this, MessageBox.MessageType.Error,
-                        "Steam files interface is not connected.\nRun `snap connect eternalmodmanager:steam-files`, then try again.", MessageBox.MessageButtons.Ok);
-                    Environment.Exit(1);
-                }
-
-                // Disable launch injector button (unsupported due to sandboxing restrictions)
-                this.FindControl<Button>("RunInjectorButton")!.IsEnabled = false;
-            }*/
-
             // Check if the game path is set
             if (String.IsNullOrEmpty(App.GamePath))
             {
