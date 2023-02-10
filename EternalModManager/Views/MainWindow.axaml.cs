@@ -103,11 +103,11 @@ public partial class MainWindow : Window
             try
             {
                 // Check if xprop is installed
-                if (!(await LinuxProgramExistsAsync("xprop")))
+                if ((await LinuxProgramExistsAsync("xprop")))
                 {
                     await MessageBox.ShowAsync(this, MessageBox.MessageType.Error,
                         "`xprop` is not installed. Install xprop from your package manager, then try again.", MessageBox.MessageButtons.Ok);
-                    Environment.Exit(1);
+                    Close();
                 }
 
                 // Run xprop
@@ -152,7 +152,7 @@ public partial class MainWindow : Window
             // Show error and exit
             await MessageBox.ShowAsync(this, MessageBox.MessageType.Error,
                 "Can't find the game directory.\nDid you select/pass the correct directory?", MessageBox.MessageButtons.Ok);
-            Environment.Exit(1);
+            Close();
         }
 
         // Check if modding tools are not present (Windows)
@@ -161,7 +161,7 @@ public partial class MainWindow : Window
             // Show error and exit
             await MessageBox.ShowAsync(this, MessageBox.MessageType.Error,
                 "Can't find EternalModInjector.bat. Make sure that the modding tools are installed.", MessageBox.MessageButtons.Ok);
-            Environment.Exit(1);
+            Close();
         }
 
         // If modding tools are not present, prompt to download them (Linux only)
@@ -174,7 +174,7 @@ public partial class MainWindow : Window
             if (result != MessageBox.MessageResult.Yes)
             {
                 // Exit
-                Environment.Exit(1);
+                Close();
             }
 
             // Disable window
@@ -203,7 +203,7 @@ public partial class MainWindow : Window
             {
                 await MessageBox.ShowAsync(this, MessageBox.MessageType.Error, 
                     "Failed to download modding tools.", MessageBox.MessageButtons.Ok);
-                Environment.Exit(1);
+                Close();
             }
 
             // Re-enable window
@@ -521,7 +521,7 @@ public partial class MainWindow : Window
 
                     // Terminal argument to run command
                     // Why did you have to deprecate -e, GNOME?
-                    string termArg = "-e";
+                    string termArg = "";
 
                     switch (terminal)
                     {
@@ -530,6 +530,9 @@ public partial class MainWindow : Window
                             break;
                         case "tilda":
                             termArg = "-c";
+                            break;
+                        default:
+                            termArg = "-e";
                             break;
                     }
 
