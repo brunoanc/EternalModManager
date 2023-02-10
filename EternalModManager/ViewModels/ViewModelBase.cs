@@ -1,8 +1,7 @@
 ﻿using ReactiveUI;
 
-namespace EternalModManager.ViewModels
+namespace EternalModManager.ViewModels;
+
+public class ViewModelBase : ReactiveObject
 {
-    public class ViewModelBase : ReactiveObject
-    {
-    }
 }
