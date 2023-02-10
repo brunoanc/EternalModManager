@@ -3,18 +3,14 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
-using System.Text.Encodings.Web;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.Input;
 using Avalonia.Platform;
 using Avalonia.Interactivity;
 using Avalonia.Media;
 using Avalonia.Themes.Fluent;
-using EternalModManager.Classes;
 using EternalModManager.ViewModels;
 
 namespace EternalModManager.Views;
