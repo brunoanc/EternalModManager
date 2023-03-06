@@ -101,7 +101,7 @@ public partial class MainWindow : Window
             try
             {
                 // Check if xprop is installed
-                if ((await LinuxProgramExistsAsync("xprop")))
+                if (!(await LinuxProgramExistsAsync("xprop")))
                 {
                     await MessageBox.ShowAsync(this, MessageBox.MessageType.Error,
                         "`xprop` is not installed. Install xprop from your package manager, then try again.", MessageBox.MessageButtons.Ok);
