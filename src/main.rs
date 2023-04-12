@@ -41,7 +41,7 @@ fn main() -> ExitCode {
     app.connect_activate(|a| {
         #[cfg(target_os = "windows")]
         // Set dark theme if needed on Windows
-        set_system_theme_windows();
+        set_theme_windows();
 
         // Set window icon on X11
         Window::set_default_icon_name("com.powerball253.eternalmodmanager");
@@ -63,7 +63,7 @@ fn main() -> ExitCode {
     app.connect_open(|a, f, _| {
         #[cfg(target_os = "windows")]
         // Set dark theme if needed on Windows
-        set_system_theme_windows();
+        set_theme_windows();
 
         // Set window icon on X11
         Window::set_default_icon_name("com.powerball253.eternalmodmanager");
@@ -87,7 +87,7 @@ fn main() -> ExitCode {
 
 #[cfg(target_os = "windows")]
 // Set dark theme if needed on Windows
-fn set_system_theme_windows() {
+fn set_theme_windows() {
     use adw::{StyleManager, ColorScheme};
     use windows::UI::ViewManagement::{UISettings, UIColorType};
 
