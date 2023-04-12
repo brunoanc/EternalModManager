@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <object class="GtkApplicationWindow" id="MainWindow">
+    <property name="width-request">600</property>
+    <property name="height-request">800</property>
+    <property name="title" translatable="1">EternalModManager by PowerBall253</property>
+    <property name="resizable">0</property>
+    <property name="default-width">600</property>
+    <property name="default-height">800</property>
+    <property name="child">
+      <object class="GtkBox">
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="GtkGrid">
+            <property name="column-homogeneous">1</property>
+            <child>
+              <object class="GtkCheckButton" id="EnableAllCheckBox">
+                <property name="label" translatable="1">Enable/Disable All</property>
+                <property name="focusable">0</property>
+                <property name="halign">end</property>
+                <property name="margin-end">20</property>
+                <property name="margin-top">6</property>
+                <layout>
+                  <property name="column">1</property>
+                  <property name="row">0</property>
+                </layout>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="halign">start</property>
+                <property name="margin-start">20</property>
+                <property name="margin-top">6</property>
+                <property name="label" translatable="1">Mod list (drag and drop .zip files to install mods)</property>
+                <property name="single-line-mode">1</property>
+                <layout>
+                  <property name="column">0</property>
+                  <property name="row">0</property>
+                </layout>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkScrolledWindow" id="ModListScrolled">
+            <property name="height-request">250</property>
+            <property name="focusable">1</property>
+            <property name="margin-start">20</property>
+            <property name="margin-end">20</property>
+            <property name="margin-top">6</property>
+            <property name="has-frame">1</property>
+            <property name="child">
+              <object class="GtkViewport">
+                <property name="child">
+                  <object class="GtkListBox" id="ModList">
+                  </object>
+                </property>
+              </object>
+            </property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox">
+            <property name="valign">center</property>
+            <property name="margin-start">20</property>
+            <property name="margin-end">20</property>
+            <property name="margin-top">10</property>
+            <property name="orientation">vertical</property>
+            <property name="spacing">8</property>
+            <child>
+              <object class="GtkLabel">
+                <property name="halign">start</property>
+                <property name="label" translatable="1">Selected mod information:</property>
+                <property name="single-line-mode">1</property>
+                <attributes>
+                  <attribute name="weight" value="bold"></attribute>
+                </attributes>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="halign">start</property>
+                <property name="label" translatable="1">Name:</property>
+                <property name="single-line-mode">1</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel" id="ModName">
+                <property name="halign">start</property>
+                <property name="margin-start">5</property>
+                <property name="label">-</property>
+                <property name="ellipsize">end</property>
+                <property name="single-line-mode">1</property>
+                <attributes>
+                  <attribute name="style" value="italic"></attribute>
+                </attributes>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="halign">start</property>
+                <property name="label" translatable="1">Author(s):</property>
+                <property name="single-line-mode">1</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel" id="ModAuthors">
+                <property name="halign">start</property>
+                <property name="margin-start">5</property>
+                <property name="label">-</property>
+                <property name="ellipsize">end</property>
+                <property name="single-line-mode">1</property>
+                <property name="max-width-chars">80</property>
+                <attributes>
+                  <attribute name="style" value="italic"></attribute>
+                </attributes>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="halign">start</property>
+                <property name="label" translatable="1">Description:</property>
+                <property name="single-line-mode">1</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkScrolledWindow" id="ModDescriptionScrolled">
+                <property name="focusable">1</property>
+                <property name="min-content-height">70</property>
+                <property name="max-content-height">70</property>
+                <property name="child">
+                  <object class="GtkViewport">
+                    <property name="child">
+                      <object class="GtkLabel" id="ModDescription">
+                        <property name="margin-start">5</property>
+                        <property name="label">-</property>
+                        <property name="wrap">1</property>
+                        <property name="wrap-mode">word-char</property>
+                        <property name="max-width-chars">80</property>
+                        <property name="xalign">0</property>
+                        <property name="yalign">0</property>
+                        <attributes>
+                          <attribute name="style" value="italic"></attribute>
+                        </attributes>
+                      </object>
+                    </property>
+                  </object>
+                </property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="halign">start</property>
+                <property name="label" translatable="1">Version:</property>
+                <property name="single-line-mode">1</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel" id="ModVersion">
+                <property name="halign">start</property>
+                <property name="margin-start">5</property>
+                <property name="label">-</property>
+                <property name="ellipsize">end</property>
+                <property name="single-line-mode">1</property>
+                <property name="max-width-chars">80</property>
+                <attributes>
+                  <attribute name="style" value="italic"></attribute>
+                </attributes>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="halign">start</property>
+                <property name="label" translatable="1">Min. required mod loader version:</property>
+                <property name="single-line-mode">1</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel" id="ModMinVersion">
+                <property name="halign">start</property>
+                <property name="margin-start">5</property>
+                <property name="label">-</property>
+                <property name="ellipsize">end</property>
+                <property name="single-line-mode">1</property>
+                <property name="max-width-chars">80</property>
+                <attributes>
+                  <attribute name="style" value="italic"></attribute>
+                </attributes>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel">
+                <property name="halign">start</property>
+                <property name="label" translatable="1">Load priority:</property>
+                <property name="single-line-mode">1</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel" id="ModLoadPriority">
+                <property name="halign">start</property>
+                <property name="margin-start">5</property>
+                <property name="label">-</property>
+                <property name="ellipsize">end</property>
+                <property name="single-line-mode">1</property>
+                <property name="max-width-chars">80</property>
+                <attributes>
+                  <attribute name="style" value="italic"></attribute>
+                </attributes>
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel" id="ModOnlineSafety">
+                <property name="halign">fill</property>
+                <property name="label" translatable="1"></property>
+                <property name="wrap">1</property>
+                <property name="wrap-mode">word-char</property>
+                <property name="xalign">0</property>
+                <attributes>
+                  <attribute name="weight" value="bold"></attribute>
+                </attributes>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkSeparator">
+            <property name="margin-start">10</property>
+            <property name="margin-end">10</property>
+            <property name="margin-top">10</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkGrid">
+            <property name="margin-start">30</property>
+            <property name="margin-end">30</property>
+            <property name="height-request">70</property>
+            <property name="column-homogeneous">1</property>
+            <property name="vexpand">1</property>
+            <property name="valign">center</property>
+            <style>
+              <class name="button-grid"/>
+            </style>
+            <child>
+              <object class="GtkButton" id="RunInjector">
+                <property name="label" translatable="1">Run mod injector</property>
+                <property name="width-request">220</property>
+                <property name="height-request">40</property>
+                <property name="focusable">1</property>
+                <property name="receives-default">1</property>
+                <property name="margin-end">20</property>
+                <property name="valign">center</property>
+                <property name="vexpand">1</property>
+                <style>
+                  <class name="run-mod-injector-button"/>
+                </style>
+                <layout>
+                  <property name="column">0</property>
+                  <property name="row">0</property>
+                </layout>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="AdvancedOptions">
+                <property name="label" translatable="1">Advanced options...</property>
+                <property name="width-request">220</property>
+                <property name="height-request">40</property>
+                <property name="focusable">1</property>
+                <property name="receives-default">1</property>
+                <property name="margin-start">20</property>
+                <property name="valign">center</property>
+                <property name="vexpand">1</property>
+                <layout>
+                  <property name="column">1</property>
+                  <property name="row">0</property>
+                </layout>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </property>
+  </object>
+</interface>

@@ -2,8 +2,8 @@
 Name=EternalModManager
 Comment=Cross platform mod manager for DOOM Eternal.
 Type=Application
-Exec=eternalmodmanager
+Exec=eternal_mod_manager
 Terminal=false
 Categories=Utility;GTK;
-Icon=${SNAP}/meta/gui/eternalmodmanager.png
+Icon=com.powerball253.eternalmodmanager
 StartupWMClass=com.powerball253.eternalmodmanager
