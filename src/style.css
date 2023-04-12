@@ -1,0 +1,24 @@
+window {
+    font-family: 'Noto Sans', 'Segoe UI', system-ui;
+    font-size: 12px;
+}
+
+checkbutton label {
+    margin-top: 1px;
+}
+
+button {
+    font-weight: 500;
+}
+
+.mod-check {
+    margin-right: 5px;
+}
+
+.button-grid button {
+    font-size: 14px;
+}
+
+.run-mod-injector-button {
+    font-weight: bold;
+}

@@ -1,0 +1,118 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  appimage-build:
+    runs-on: ubuntu-latest
+    container:
+      image: ubuntu:22.10
+      options: --device /dev/fuse --privileged
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - name: Clone repo
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: |
+          apt -y update
+          apt -y install build-essential kmod curl wget libssl-dev libadwaita-1-dev fuse file libfuse2
+
+      - name: Install Rust
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path --profile=minimal
+
+      - name: Build project
+        run: |
+          PATH="${HOME}/.cargo/bin:${PATH}" cargo build --release
+
+      - name: Install appimagetool, linuxdeploy and gtk plugin
+        run: |
+          wget -c "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage"
+          wget -c "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage"
+          wget -c "https://raw.githubusercontent.com/linuxdeploy/linuxdeploy-plugin-gtk/ca4ae0999883fc359c87acb327ce2afaf9da8c91/linuxdeploy-plugin-gtk.sh"
+          chmod +x appimagetool-x86_64.AppImage linuxdeploy-x86_64.AppImage linuxdeploy-plugin-gtk.sh
+
+      - name: Create AppDir
+        run: |
+          ./linuxdeploy-x86_64.AppImage --appdir AppDir --plugin gtk --executable target/release/eternal_mod_manager --icon-file resources/com.powerball253.eternalmodmanager.png --desktop-file resources/com.powerball253.eternalmodmanager.desktop
+
+      - name: Add metainfo
+        run: |
+          mkdir -p AppDir/usr/share/metainfo
+          cp resources/com.powerball253.eternalmodmanager.appdata.xml AppDir/usr/share/metainfo
+
+      - name: Patch apprun hook
+        run: |
+          cd AppDir
+          sed -i '/GTK_THEME/d' apprun-hooks/linuxdeploy-plugin-gtk.sh
+          sed -i '/GDK_BACKEND/d' apprun-hooks/linuxdeploy-plugin-gtk.sh
+          sed -i "s|AppRun.wrapped|$(readlink AppRun.wrapped)|g" AppRun
+          cd ..
+
+      - name: Create AppImage
+        run: |
+          ./appimagetool-x86_64.AppImage AppDir
+          mv EternalModManager-*.AppImage EternalModManager-${GITHUB_REF_NAME:1}-x86_64.AppImage
+
+      - name: Upload AppImage
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.SECRET_TOKEN }}
+          file_glob: true
+          file: 'EternalModManager-*-x86_64.AppImage'
+          tag: ${{ github.ref }}
+
+  snap-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clone repo
+        uses: actions/checkout@v3
+
+      - name: Build snap
+        uses: snapcore/action-build@v1
+        id: snapcraft
+
+      - name: Upload snap
+        uses: snapcore/action-publish@v1
+        with:
+          store_login: ${{ secrets.STORE_LOGIN }}
+          snap: ${{ steps.snapcraft.outputs.snap }}
+          release: stable
+
+  windows-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clone repo
+        uses: actions/checkout@v3
+
+      - name: Build with Docker image
+        uses: addnab/docker-run-action@v3
+        with:
+            image: mglolenstine/gtk4-cross:rust-gtk-4.8
+            options: -v ${{ github.workspace }}:/mnt
+            run: |
+                build
+                package
+                cd package
+                zip -r EternalModManager.zip *
+
+      - name: Rename zip
+        run: sudo mv package/EternalModManager.zip EternalModManager-${GITHUB_REF_NAME:1}-win64.zip
+
+      - name: Upload zip
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.SECRET_TOKEN }}
+          file_glob: true
+          file: 'EternalModManager-*-win64.zip'
+          tag: ${{ github.ref }}

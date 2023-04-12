@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <object class="GtkGrid" id="RowGrid">
+    <property name="margin-top">3</property>
+    <property name="margin-bottom">3</property>
+    <child>
+      <object class="GtkCheckButton">
+        <property name="width-request">4</property>
+        <property name="focusable">1</property>
+        <property name="margin-start">6</property>
+        <layout>
+          <property name="column">0</property>
+          <property name="row">0</property>
+        </layout>
+        <style>
+          <class name="mod-check"/>
+        </style>
+      </object>
+    </child>
+    <child>
+      <object class="GtkLabel">
+        <property name="halign">end</property>
+        <property name="margin-end">6</property>
+        <property name="use-markup">1</property>
+        <property name="label" translatable="1"></property>
+        <attributes>
+          <attribute name="size" value="14336"></attribute>
+        </attributes>
+        <layout>
+          <property name="column">2</property>
+          <property name="row">0</property>
+        </layout>
+      </object>
+    </child>
+    <child>
+      <object class="GtkLabel">
+        <property name="halign">start</property>
+        <property name="hexpand">1</property>
+        <property name="label" translatable="1"></property>
+        <property name="ellipsize">end</property>
+        <property name="margin-top">1</property>
+        <layout>
+          <property name="column">1</property>
+          <property name="row">0</property>
+        </layout>
+      </object>
+    </child>
+  </object>
+</interface>

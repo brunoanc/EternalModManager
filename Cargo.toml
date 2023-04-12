@@ -1,0 +1,31 @@
+[package]
+name = "eternal_mod_manager"
+description = "Cross platform mod manager for DOOM Eternal."
+version = "4.0.0"
+edition = "2021"
+
+[dependencies]
+adw = { version = "0.3.1", package = "libadwaita", features = ["v1_2"] }
+gtk = { version = "0.6.4", package = "gtk4", features = ["v4_8"] }
+reqwest = { version = "0.11.15", features = ["blocking"] }
+zip = { version = "0.6.4", default_features = false, features = ["deflate"] }
+notify-debouncer-mini = { version =  "0.2.1", default_features = false }
+arboard = { version = "3.2.0", features = ["wayland-data-control"] }
+notify = "5.1.0"
+serde_json = "1.0.95"
+im = "15.1.0"
+open = "4.0.1"
+walkdir = "2.3.3"
+once_cell = "1.17.1"
+
+[target.'cfg(target_os = "windows")'.dependencies]
+windows = { version = "0.47.0", features = ["UI_ViewManagement"] }
+
+[target.'cfg(target_os = "windows")'.build-dependencies]
+winres = "0.1.12"
+
+[profile.release]
+panic = "abort"
+strip = true
+codegen-units = 1
+lto = true

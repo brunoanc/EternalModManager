@@ -29,19 +29,19 @@ A cross platform mod manager for DOOM Eternal, making it easier to set-up and in
 The app is currently available in the [AUR](https://aur.archlinux.org/packages/eternalmodmanager/). You can use your favorite AUR helper to install it, or download and build manually as described in the [Arch wiki](https://aur.archlinux.org/packages/eternalmodmanager/).
 
 ## Installing on Windows
-Make sure you have the [.NET 7 Runtime](https://dotnet.microsoft.com/en-us/download) installed, then download and extract the .zip from the latest release to your DOOM Eternal directory.
+Download and extract the .zip file from the latest release to your DOOM Eternal directory.
 
 ## Compiling
-First, make sure you have the latest version of the .NET 7 SDK installed. Then clone the repo, and run the following commands:
+1. Install Rust by following the instructions [here](https://www.rust-lang.org/tools/install).
+2. Follow the GTK4/libadwaita installation instructions for your platform from [here](https://gtk-rs.org/gtk4-rs/git/book/installation.html).
+3. Clone the repo using:
+  ```
+  git clone https://github.com/PowerBall253/EternalModManager.git
+  cd EternalModManager
+  ```
+3. Compile the project using cargo:
+  ```
+  cargo build --release
+  ```
 
-```
-dotnet build -c Release
-```
-
-The compiled application will be located in the `EternalModManager/bin/Release/net7.0` folder.
-
-Optionally, you can run the app with the following command:
-
-```
-dotnet run -c Release
-```
+The compiled binary will be located at `./target/release`.

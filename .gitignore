@@ -1,4 +1,1 @@
-.idea/
-.vscode/
-.vs/
-appimage/AppImages
+/target

@@ -7,26 +7,46 @@ on:
     tags-ignore:
       - '**'
 
-jobs:
-  build:
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, windows-latest]
+env:
+  CARGO_TERM_COLOR: always
 
-    runs-on: ${{ matrix.os }}
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container:
+      image: ubuntu:22.10
+      options: --device /dev/fuse --privileged
+
+    defaults:
+      run:
+        shell: bash
 
     steps:
       - name: Clone repo
         uses: actions/checkout@v3
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v1
+      - name: Install dependencies
+        run: |
+          apt -y update
+          apt -y install build-essential kmod curl wget libssl-dev libadwaita-1-dev fuse file libfuse2
+
+      - name: Install Rust
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path --profile=minimal
+
+      - name: Build project
+        run: |
+          PATH="${HOME}/.cargo/bin:${PATH}" cargo build
+          PATH="${HOME}/.cargo/bin:${PATH}" cargo build --release
+
+      - name: Upload debug artifact
+        uses: actions/upload-artifact@v3
         with:
-          dotnet-version: 7.0.x
+          name: test-debug
+          path: ${{ github.workspace }}/target/debug/eternal_mod_manager
 
-      - name: Restore dependencies
-        run: dotnet restore
-
-      - name: Build
-        run: dotnet build
+      - name: Upload release artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-release
+          path: ${{ github.workspace }}/target/release/eternal_mod_manager
