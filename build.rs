@@ -2,7 +2,7 @@ use std::env;
 
 // Set icon on Windows
 fn set_icon() {
-    use winres::WindowsResource;
+    use winresource::WindowsResource;
 
     // Set icon
     WindowsResource::new().set_icon("resources/icon.ico").compile().unwrap();
