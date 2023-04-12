@@ -9,7 +9,7 @@ A cross platform mod manager for DOOM Eternal, making it easier to set-up and in
 ## Installing on Linux
 ### Flatpak (Recommended)
 
-<a href='https://flathub.org/apps/details/com.powerball253.eternalmodmanager'>
+<a href='https://beta.flathub.org/apps/com.powerball253.eternalmodmanager'>
     <img width='400' alt='Download on Flathub' src='https://flathub.org/assets/badges/flathub-badge-en.png'/>
 </a>
 
