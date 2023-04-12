@@ -104,6 +104,7 @@ jobs:
                 build
                 package
                 cd package
+                mv eternal_mod_manager.exe EternalModManager.exe
                 zip -r EternalModManager.zip *
 
       - name: Rename zip
