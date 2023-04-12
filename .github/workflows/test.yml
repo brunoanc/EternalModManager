@@ -11,7 +11,7 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  test:
+  ubuntu-test:
     runs-on: ubuntu-latest
     container:
       image: ubuntu:22.10
@@ -42,11 +42,40 @@ jobs:
       - name: Upload debug artifact
         uses: actions/upload-artifact@v3
         with:
-          name: test-debug
+          name: ubuntu-debug
           path: ${{ github.workspace }}/target/debug/eternal_mod_manager
 
       - name: Upload release artifact
         uses: actions/upload-artifact@v3
         with:
-          name: test-release
+          name: ubuntu-release
           path: ${{ github.workspace }}/target/release/eternal_mod_manager
+
+  windows-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clone repo
+        uses: actions/checkout@v3
+
+      - name: Build with Docker image
+        uses: addnab/docker-run-action@v3
+        with:
+            image: mglolenstine/gtk4-cross:rust-gtk-4.8
+            options: -v ${{ github.workspace }}:/mnt
+            run: |
+                source "$HOME/.cargo/env"
+                cargo build --target=x86_64-pc-windows-gnu --locked
+                cargo build --target=x86_64-pc-windows-gnu --release --locked
+
+      - name: Upload debug artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: windows-debug
+          path: ${{ github.workspace }}/target/x86_64-pc-windows-gnu/debug/eternal_mod_manager.exe
+
+      - name: Upload release artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: windows-release
+          path: ${{ github.workspace }}/target/x86_64-pc-windows-gnu/release/eternal_mod_manager.exe
