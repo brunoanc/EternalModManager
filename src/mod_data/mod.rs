@@ -35,8 +35,8 @@ impl ModData {
         let author = json["author"].as_str().unwrap_or("Unknown.");
         let description = json["description"].as_str().unwrap_or("Not specified.");
         let version = json["version"].as_str().unwrap_or("Not specified.");
-        let load_priority = json["loadPriority"].as_i64().map(|i| i.to_string()).unwrap_or("Not specified.".into());
-        let required_version = json["loadPriority"].as_i64().map(|i| i.to_string()).unwrap_or("Not specified.".into());
+        let load_priority = json["loadPriority"].as_i64().map(|i| i.to_string()).unwrap_or_else(|| "Not specified.".into());
+        let required_version = json["loadPriority"].as_i64().map(|i| i.to_string()).unwrap_or_else(|| "Not specified.".into());
 
         // Create and return object
         Object::builder()

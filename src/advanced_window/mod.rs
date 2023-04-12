@@ -447,7 +447,7 @@ fn save_injector_settings(checkboxes: &HashMap<&str, CheckButton>,text_entry: &E
     settings_file.push(format!(":GAME_PARAMETERS={}", text_entry.text()));
 
     // Append extra settings
-    settings_file.push(String::new());
+    settings_file.push(String::default());
     settings_file.append(&mut extra_settings);
 
     // Join settings

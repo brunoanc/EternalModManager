@@ -225,7 +225,7 @@ pub fn create(app: &Application, model: &Model) -> ApplicationWindow {
                 let new_path = mods_folder.join(path.file_name().unwrap());
 
                 // Check if it's already in the target folder
-                if path.parent().unwrap_or(Path::new("")).canonicalize().unwrap() == mods_folder.canonicalize().unwrap() {
+                if path.parent().unwrap_or_else(|| Path::new("")).canonicalize().unwrap() == mods_folder.canonicalize().unwrap() {
                     return false;
                 }
 
@@ -387,7 +387,7 @@ fn save_game_path() {
 
     // Create directory if necessary
     if !config_dir.exists() {
-        if fs::create_dir(&config_dir).is_err() {
+        if fs::create_dir_all(&config_dir).is_err() {
             return;
         }
     }
