@@ -1,4 +1,5 @@
-#[cfg(target_os = "windows")]
+use std::env;
+
 // Set icon on Windows
 fn set_icon() {
     use winres::WindowsResource;
@@ -12,6 +13,8 @@ fn set_icon() {
 
 // Build script
 fn main() {
-    #[cfg(target_os = "windows")]
-    set_icon();
+    match env::var("CARGO_CFG_TARGET_OS").unwrap().as_str() {
+        "windows" => set_icon(),
+        _ => ()
+    }
 }
