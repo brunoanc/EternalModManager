@@ -33,13 +33,14 @@ Download and extract the .zip file from the latest release to your DOOM Eternal 
 
 ## Compiling
 1. Install Rust by following the instructions [here](https://www.rust-lang.org/tools/install).
-2. Follow the [GTK4/libadwaita installation instructions](https://gtk-rs.org/gtk4-rs/git/book/installation.html) for your platform.
-3. Clone the repo using:
+2. Follow the [GTK4 installation instructions](https://gtk-rs.org/gtk4-rs/git/book/installation.html) for your platform.
+3. Follow the [libadwaita installation instructions](https://gtk-rs.org/gtk4-rs/git/book/libadwaita.html) for your platform.
+4. Clone the repo using:
   ```
   git clone https://github.com/PowerBall253/EternalModManager.git
   cd EternalModManager
   ```
-3. Compile the project using cargo:
+5. Compile the project using cargo:
   ```
   cargo build --release
   ```
