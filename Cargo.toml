@@ -1,7 +1,7 @@
 [package]
 name = "eternal_mod_manager"
 description = "Cross platform mod manager for DOOM Eternal."
-version = "4.0.2"
+version = "4.0.3"
 authors = ["Bruno Ancona <bruno@powerball253.com>"]
 license = "MIT"
 repository = "https://github.com/PowerBall253/EternalModManager"
