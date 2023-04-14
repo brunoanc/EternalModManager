@@ -1,13 +1,19 @@
+use std::{
+    collections::HashMap,
+    fs::{self, File},
+    io::{BufRead, BufReader},
+    path::PathBuf,
+    thread
+};
+
 use adw::prelude::*;
-use gtk::{ApplicationWindow, Builder, Button, MessageDialog, DialogFlags, MessageType, ButtonsType, ResponseType, CheckButton, Box, Entry};
-use gtk::glib::{self, clone, MainContext};
 use arboard::Clipboard;
+use gtk::{
+    glib::{self, clone, MainContext},
+    ApplicationWindow, Box, Builder, Button, ButtonsType, CheckButton, DialogFlags, Entry, MessageDialog,
+    MessageType, ResponseType
+};
 use walkdir::WalkDir;
-use std::thread;
-use std::fs::{self, File};
-use std::path::PathBuf;
-use std::collections::HashMap;
-use std::io::{BufReader, BufRead};
 
 // Create advanced window
 pub fn create(parent_window: &ApplicationWindow) -> ApplicationWindow {
@@ -21,14 +27,37 @@ pub fn create(parent_window: &ApplicationWindow) -> ApplicationWindow {
 
     // Checkboxes map
     let checkboxes = HashMap::from([
-        ("AUTO_LAUNCH_GAME", builder.object::<CheckButton>("AutoLaunchCheckbox").unwrap()),
-        ("RESET_BACKUPS", builder.object::<CheckButton>("ResetBackupsCheckbox").unwrap()),
-        ("AUTO_UPDATE", builder.object::<CheckButton>("AutoUpdateCheckbox").unwrap()),
-        ("VERBOSE", builder.object::<CheckButton>("VerboseCheckbox").unwrap()),
+        (
+            "AUTO_LAUNCH_GAME",
+            builder.object::<CheckButton>("AutoLaunchCheckbox").unwrap()
+        ),
+        (
+            "RESET_BACKUPS",
+            builder.object::<CheckButton>("ResetBackupsCheckbox").unwrap()
+        ),
+        (
+            "AUTO_UPDATE",
+            builder.object::<CheckButton>("AutoUpdateCheckbox").unwrap()
+        ),
+        (
+            "VERBOSE",
+            builder.object::<CheckButton>("VerboseCheckbox").unwrap()
+        ),
         ("SLOW", builder.object::<CheckButton>("SlowCheckbox").unwrap()),
-        ("COMPRESS_TEXTURES", builder.object::<CheckButton>("CompressTexturesCheckbox").unwrap()),
-        ("DISABLE_MULTITHREADING", builder.object::<CheckButton>("DisableMultithreadingCheckbox").unwrap()),
-        ("ONLINE_SAFE", builder.object::<CheckButton>("OnlineSafeCheckbox").unwrap())
+        (
+            "COMPRESS_TEXTURES",
+            builder.object::<CheckButton>("CompressTexturesCheckbox").unwrap()
+        ),
+        (
+            "DISABLE_MULTITHREADING",
+            builder
+                .object::<CheckButton>("DisableMultithreadingCheckbox")
+                .unwrap()
+        ),
+        (
+            "ONLINE_SAFE",
+            builder.object::<CheckButton>("OnlineSafeCheckbox").unwrap()
+        )
     ]);
 
     // Game parameters text entry
@@ -283,7 +312,10 @@ fn get_backups() -> Vec<PathBuf> {
     let mut backups = Vec::new();
 
     // Check if executable backup exists
-    let exe_path = crate::GAME_PATH.get().unwrap().join("DOOMEternalx64vk.exe.backup");
+    let exe_path = crate::GAME_PATH
+        .get()
+        .unwrap()
+        .join("DOOMEternalx64vk.exe.backup");
 
     if exe_path.is_file() {
         // Push to backup list
@@ -291,7 +323,11 @@ fn get_backups() -> Vec<PathBuf> {
     }
 
     // Check if packagemapspec backup exists
-    let packagemapspec_path = crate::GAME_PATH.get().unwrap().join("base").join("packagemapspec.json.backup");
+    let packagemapspec_path = crate::GAME_PATH
+        .get()
+        .unwrap()
+        .join("base")
+        .join("packagemapspec.json.backup");
 
     if packagemapspec_path.is_file() {
         // Push to backup list
@@ -299,24 +335,50 @@ fn get_backups() -> Vec<PathBuf> {
     }
 
     // Get backups in "base" directory
-    for backup in fs::read_dir(crate::GAME_PATH.get().unwrap().join("base")).unwrap().filter_map(|f| f.ok()) {
-        if backup.file_name().to_str().unwrap().ends_with(".resources.backup") {
+    for backup in fs::read_dir(crate::GAME_PATH.get().unwrap().join("base"))
+        .unwrap()
+        .filter_map(|f| f.ok())
+    {
+        if backup
+            .file_name()
+            .to_str()
+            .unwrap()
+            .ends_with(".resources.backup")
+        {
             // Push to backup list
             backups.push(backup.path());
         }
     }
 
     // Get backups in "base/game" directory
-    for backup in WalkDir::new(crate::GAME_PATH.get().unwrap().join("base").join("game")).into_iter().filter_map(|f| f.ok()) {
-        if backup.file_name().to_str().unwrap().ends_with(".resources.backup") {
+    for backup in WalkDir::new(crate::GAME_PATH.get().unwrap().join("base").join("game"))
+        .into_iter()
+        .filter_map(|f| f.ok())
+    {
+        if backup
+            .file_name()
+            .to_str()
+            .unwrap()
+            .ends_with(".resources.backup")
+        {
             // Push to backup list
             backups.push(backup.path().to_path_buf());
         }
     }
 
     // Get backups in "base/sound/soundbanks/pc" directory
-    for backup in fs::read_dir(crate::GAME_PATH.get().unwrap().join("base")
-    .join("sound").join("soundbanks").join("pc")).unwrap().filter_map(|f| f.ok()) {
+    for backup in fs::read_dir(
+        crate::GAME_PATH
+            .get()
+            .unwrap()
+            .join("base")
+            .join("sound")
+            .join("soundbanks")
+            .join("pc")
+    )
+    .unwrap()
+    .filter_map(|f| f.ok())
+    {
         if backup.file_name().to_str().unwrap().ends_with(".snd.backup") {
             // Push to backup list
             backups.push(backup.path());
@@ -327,7 +389,9 @@ fn get_backups() -> Vec<PathBuf> {
 }
 
 // Load injector settings file
-fn load_injector_settings(checkboxes: &HashMap<&str, CheckButton>,text_entry: &Entry, injector_settings_box: &Box) {
+fn load_injector_settings(
+    checkboxes: &HashMap<&str, CheckButton>, text_entry: &Entry, injector_settings_box: &Box
+) {
     // User settings (found in file)
     let mut user_settings: HashMap<String, String> = HashMap::new();
 
@@ -336,7 +400,10 @@ fn load_injector_settings(checkboxes: &HashMap<&str, CheckButton>,text_entry: &E
     checkboxes["AUTO_UPDATE"].set_sensitive(false);
 
     // Get injector settings path
-    let injector_settings_path = crate::GAME_PATH.get().unwrap().join("EternalModInjector Settings.txt");
+    let injector_settings_path = crate::GAME_PATH
+        .get()
+        .unwrap()
+        .join("EternalModInjector Settings.txt");
 
     // Open file
     let injector_settings_file = match File::open(injector_settings_path) {
@@ -349,7 +416,10 @@ fn load_injector_settings(checkboxes: &HashMap<&str, CheckButton>,text_entry: &E
     };
 
     // Read settings line by line
-    for line in BufReader::new(injector_settings_file).lines().filter_map(|l| l.ok()) {
+    for line in BufReader::new(injector_settings_file)
+        .lines()
+        .filter_map(|l| l.ok())
+    {
         // Get only settings
         if !line.starts_with(':') {
             continue;
@@ -386,13 +456,16 @@ fn load_injector_settings(checkboxes: &HashMap<&str, CheckButton>,text_entry: &E
 }
 
 // Save injector settings file
-fn save_injector_settings(checkboxes: &HashMap<&str, CheckButton>,text_entry: &Entry) -> bool {
+fn save_injector_settings(checkboxes: &HashMap<&str, CheckButton>, text_entry: &Entry) -> bool {
     // Vectors for storing settings
     let mut settings_file = Vec::new();
     let mut extra_settings = Vec::new();
 
     // Get injector settings path
-    let injector_settings_path = crate::GAME_PATH.get().unwrap().join("EternalModInjector Settings.txt");
+    let injector_settings_path = crate::GAME_PATH
+        .get()
+        .unwrap()
+        .join("EternalModInjector Settings.txt");
 
     // Open file
     let injector_settings_file = match File::open(&injector_settings_path) {
@@ -403,7 +476,10 @@ fn save_injector_settings(checkboxes: &HashMap<&str, CheckButton>,text_entry: &E
     };
 
     // Read settings line by line
-    for line in BufReader::new(&injector_settings_file).lines().filter_map(|l| l.ok()) {
+    for line in BufReader::new(&injector_settings_file)
+        .lines()
+        .filter_map(|l| l.ok())
+    {
         // Skip empty lines
         if line.is_empty() {
             continue;

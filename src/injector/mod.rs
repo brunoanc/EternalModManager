@@ -4,7 +4,11 @@ use std::process::{Command, Stdio};
 // Check if program exists on Linux
 fn linux_program_exists(program: &str) -> bool {
     // Use "command -v" to check
-    match Command::new("sh").args(["-c", &format!("command -v {}", program)]).stdout(Stdio::null()).status() {
+    match Command::new("sh")
+        .args(["-c", &format!("command -v {}", program)])
+        .stdout(Stdio::null())
+        .status()
+    {
         Ok(c) => c.code().unwrap_or(1) == 0,
         Err(_) => false
     }
@@ -16,11 +20,36 @@ fn get_terminal_linux() -> Option<String> {
     use std::env;
 
     // List of common terminals from i3-sensible-terminal
-    let mut terminals: Vec<String> = vec!["x-terminal-emulator".into(), "mate-terminal".into(), "gnome-terminal".into(),
-        "terminator".into(), "xfce4-terminal".into(), "urxvt".into(), "rxvt".into(), "termit".into(), "Eterm".into(),
-        "aterm".into(), "uxterm".into(), "xterm".into(), "roxterm".into(), "termite".into(), "lxterminal".into(),
-        "terminology".into(), "foot".into(), "st".into(), "qterminal".into(), "lilyterm".into(), "tilix".into(),
-        "terminix".into(), "konsole".into(), "kitty".into(), "guake".into(), "tilda".into(), "alacritty".into(), "hyper".into()];
+    let mut terminals: Vec<String> = vec![
+        "x-terminal-emulator".into(),
+        "mate-terminal".into(),
+        "gnome-terminal".into(),
+        "terminator".into(),
+        "xfce4-terminal".into(),
+        "urxvt".into(),
+        "rxvt".into(),
+        "termit".into(),
+        "Eterm".into(),
+        "aterm".into(),
+        "uxterm".into(),
+        "xterm".into(),
+        "roxterm".into(),
+        "termite".into(),
+        "lxterminal".into(),
+        "terminology".into(),
+        "foot".into(),
+        "st".into(),
+        "qterminal".into(),
+        "lilyterm".into(),
+        "tilix".into(),
+        "terminix".into(),
+        "konsole".into(),
+        "kitty".into(),
+        "guake".into(),
+        "tilda".into(),
+        "alacritty".into(),
+        "hyper".into(),
+    ];
 
     // Allow user to specify their own terminal
     if let Ok(terminal) = env::var("TERMINAL") {
@@ -54,7 +83,13 @@ pub fn run() -> bool {
     drop(f);
 
     // Get injector path
-    let injector_path = crate::GAME_PATH.get().unwrap().join("EternalModInjectorShell.sh").into_os_string().into_string().unwrap();
+    let injector_path = crate::GAME_PATH
+        .get()
+        .unwrap()
+        .join("EternalModInjectorShell.sh")
+        .into_os_string()
+        .into_string()
+        .unwrap();
 
     // Run injector
     let _ = Command::new(terminal)
@@ -73,7 +108,13 @@ pub fn run() -> bool {
     use std::os::windows::process::CommandExt;
 
     // Get injector path
-    let injector_path = crate::GAME_PATH.get().unwrap().join("EternalModInjector.bat").into_os_string().into_string().unwrap();
+    let injector_path = crate::GAME_PATH
+        .get()
+        .unwrap()
+        .join("EternalModInjector.bat")
+        .into_os_string()
+        .into_string()
+        .unwrap();
 
     // Run injector
     let _ = Command::new("cmd.exe")

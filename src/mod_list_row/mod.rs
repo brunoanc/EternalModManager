@@ -1,7 +1,10 @@
 mod imp;
 
-use gtk::Widget;
-use gtk::glib::{wrapper, Object};
+use gtk::{
+    glib::{wrapper, Object},
+    Widget
+};
+
 use crate::mod_data::ModData;
 
 wrapper! {

@@ -8,7 +8,10 @@ wrapper! {
 }
 
 impl ModData {
-    pub fn new(filename: &str, is_valid: bool, is_enabled: bool, is_online_safe: bool, only_load_online_safe: bool, json: Value) -> ModData {
+    pub fn new(
+        filename: &str, is_valid: bool, is_enabled: bool, is_online_safe: bool, only_load_online_safe: bool,
+        json: Value
+    ) -> ModData {
         // Get online safety message and icon
         let (color, tooltip, icon) = if !is_valid {
             ("red", "Invalid .zip file", "✗")
@@ -17,10 +20,18 @@ impl ModData {
             ("greenyellow", "This mod is safe for use in public matches.", "✓")
         }
         else if only_load_online_safe {
-            ("orange", "This mod is not safe for use in public matches. It will not be loaded.", "﹗")
+            (
+                "orange",
+                "This mod is not safe for use in public matches. It will not be loaded.",
+                "﹗"
+            )
         }
         else if is_enabled {
-            ("red", "This mod is not safe for use in public matches. Public Battlemode matches will be disabled.", "﹗")
+            (
+                "red",
+                "This mod is not safe for use in public matches. Public Battlemode matches will be disabled.",
+                "﹗"
+            )
         }
         else {
             ("red", "This mod is not safe for use in public matches.", "﹗")
@@ -35,8 +46,14 @@ impl ModData {
         let author = json["author"].as_str().unwrap_or("Unknown.");
         let description = json["description"].as_str().unwrap_or("Not specified.");
         let version = json["version"].as_str().unwrap_or("Not specified.");
-        let load_priority = json["loadPriority"].as_i64().map(|i| i.to_string()).unwrap_or_else(|| "Not specified.".into());
-        let required_version = json["loadPriority"].as_i64().map(|i| i.to_string()).unwrap_or_else(|| "Not specified.".into());
+        let load_priority = json["loadPriority"]
+            .as_i64()
+            .map(|i| i.to_string())
+            .unwrap_or_else(|| "Not specified.".into());
+        let required_version = json["loadPriority"]
+            .as_i64()
+            .map(|i| i.to_string())
+            .unwrap_or_else(|| "Not specified.".into());
 
         // Create and return object
         Object::builder()

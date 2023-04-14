@@ -1,7 +1,7 @@
+use std::sync::{atomic::AtomicBool, RwLock};
+
 use adw::prelude::*;
-use gtk::glib::subclass::prelude::*;
-use gtk::glib::{self, ParamSpec, Properties, Value};
-use std::sync::{RwLock, atomic::AtomicBool};
+use gtk::glib::{self, subclass::prelude::*, ParamSpec, Properties, Value};
 
 #[derive(Default, Properties)]
 #[properties(wrapper_type = super::ModData)]

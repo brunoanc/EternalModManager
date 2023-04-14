@@ -1,10 +1,12 @@
 mod imp;
 
-use adw::prelude::*;
-use adw::subclass::prelude::*;
-use gtk::gio::ListModel;
-use gtk::glib::{wrapper, Object};
+use adw::{prelude::*, subclass::prelude::*};
+use gtk::{
+    gio::ListModel,
+    glib::{wrapper, Object}
+};
 use im::Vector;
+
 use crate::mod_data::ModData;
 
 wrapper! {

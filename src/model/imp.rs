@@ -1,9 +1,12 @@
-use adw::prelude::*;
-use gtk::gio::subclass::prelude::*;
-use gtk::gio::ListModel;
-use gtk::glib::{self, Object, Type};
-use im::Vector;
 use std::sync::RwLock;
+
+use adw::prelude::*;
+use gtk::{
+    gio::{subclass::prelude::*, ListModel},
+    glib::{self, Object, Type}
+};
+use im::Vector;
+
 use crate::mod_data::ModData;
 
 #[derive(Debug, Default)]
@@ -26,6 +29,10 @@ impl ListModelImpl for Model {
         self.0.read().unwrap().len() as u32
     }
     fn item(&self, position: u32) -> Option<glib::Object> {
-        self.0.read().unwrap().get(position as usize).map(|o| o.clone().upcast::<Object>())
+        self.0
+            .read()
+            .unwrap()
+            .get(position as usize)
+            .map(|o| o.clone().upcast::<Object>())
     }
 }

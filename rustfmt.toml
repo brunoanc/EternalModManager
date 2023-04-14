@@ -1,0 +1,14 @@
+condense_wildcard_suffixes = true
+control_brace_style = "ClosingNextLine"
+edition = "2021"
+enum_discrim_align_threshold = 25
+fn_params_layout = "Compressed"
+format_strings = true
+hex_literal_case = "Upper"
+match_block_trailing_comma = true
+max_width = 110
+imports_granularity = "Crate"
+newline_style = "Unix"
+group_imports = "StdExternalCrate"
+trailing_comma = "Never"
+use_field_init_shorthand = true

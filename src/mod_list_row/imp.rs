@@ -1,20 +1,21 @@
-use adw::prelude::*;
-use adw::subclass::prelude::*;
-use gtk::{Builder, Grid, Label, CheckButton, PopoverMenu, GestureClick, EventSequenceState, FileChooserNative, FileChooserAction, Window, FileFilter};
-use gtk::glib::{self, clone, ParamSpec, Properties, Value};
-use gtk::gdk::{self, Rectangle};
-use gtk::gio::{MenuModel, SimpleAction, SimpleActionGroup, File as GioFile};
-use std::fs;
-use std::thread;
-use std::cell::RefCell;
-use std::path::Path;
+use std::{cell::RefCell, fs, path::Path, thread};
+
+use adw::{prelude::*, subclass::prelude::*};
+use gtk::{
+    gdk::{self, Rectangle},
+    gio::{File as GioFile, MenuModel, SimpleAction, SimpleActionGroup},
+    glib::{self, clone, ParamSpec, Properties, Value},
+    Builder, CheckButton, EventSequenceState, FileChooserAction, FileChooserNative, FileFilter, GestureClick,
+    Grid, Label, PopoverMenu, Window
+};
+
 use crate::mod_data::ModData;
 
 #[derive(Default, Properties, Debug)]
 #[properties(wrapper_type = super::ListBoxRow)]
 pub struct ListBoxRow {
     #[property(get, set, construct_only)]
-    row_data: RefCell<Option<ModData>>,
+    row_data: RefCell<Option<ModData>>
 }
 
 #[glib::object_subclass]
@@ -149,7 +150,9 @@ impl ObjectImpl for ListBoxRow {
         let context_menu_builder = Builder::from_string(context_menu_src);
 
         // Get menu model
-        let menu_model = context_menu_builder.object::<MenuModel>("ModContextMenu").unwrap();
+        let menu_model = context_menu_builder
+            .object::<MenuModel>("ModContextMenu")
+            .unwrap();
 
         // Create context menu
         let context_menu = PopoverMenu::from_model(Some(&menu_model));
@@ -177,16 +180,31 @@ impl ObjectImpl for ListBoxRow {
         let icon = grid.child_at(2, 0).unwrap().downcast::<Label>().unwrap();
 
         // Bind properties
-        item.bind_property("is-enabled", &check, "active").sync_create().bidirectional().build();
-        item.bind_property("filename", &name, "label").sync_create().build();
+        item.bind_property("is-enabled", &check, "active")
+            .sync_create()
+            .bidirectional()
+            .build();
+        item.bind_property("filename", &name, "label")
+            .sync_create()
+            .build();
         item.bind_property("icon", &icon, "label").sync_create().build();
-        item.bind_property("tooltip", &grid, "tooltip-text").sync_create().build();
+        item.bind_property("tooltip", &grid, "tooltip-text")
+            .sync_create()
+            .build();
 
         // Move mod on checkbox click
         check.connect_toggled(move |_| {
             // Get mod paths
-            let enabled_mod_path = crate::GAME_PATH.get().unwrap().join("Mods").join(item.filename().unwrap());
-            let disabled_mod_path = crate::GAME_PATH.get().unwrap().join("DisabledMods").join(item.filename().unwrap());
+            let enabled_mod_path = crate::GAME_PATH
+                .get()
+                .unwrap()
+                .join("Mods")
+                .join(item.filename().unwrap());
+            let disabled_mod_path = crate::GAME_PATH
+                .get()
+                .unwrap()
+                .join("DisabledMods")
+                .join(item.filename().unwrap());
 
             // Check if mod is enabled
             if item.is_enabled() {

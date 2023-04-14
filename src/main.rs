@@ -1,24 +1,23 @@
 #![windows_subsystem = "windows"]
 
-mod mod_list_row;
-mod model;
-pub mod mod_data;
-mod manager_window;
 mod advanced_window;
 mod injector;
+mod manager_window;
+pub mod mod_data;
+mod mod_list_row;
+mod model;
 
-use adw::prelude::*;
-use adw::Application;
-use gtk::{CssProvider, Window};
-use gtk::glib::{self, ExitCode};
-use gtk::gdk::Display;
-use gtk::gio::ApplicationFlags;
-use once_cell::sync::OnceCell;
 use std::path::PathBuf;
-use model::Model;
 
-#[allow(deprecated)] // The add_provider_for_display function shouldn't be deprecated
-use gtk::StyleContext;
+use adw::{prelude::*, Application};
+use gtk::{
+    gdk::Display,
+    gio::ApplicationFlags,
+    glib::{self, ExitCode},
+    CssProvider, StyleContext, Window
+};
+use model::Model;
+use once_cell::sync::OnceCell;
 
 // DOOM Eternal game path
 static GAME_PATH: OnceCell<PathBuf> = OnceCell::new();
@@ -88,8 +87,8 @@ fn main() -> ExitCode {
 #[cfg(target_os = "windows")]
 // Set dark theme if needed on Windows
 fn set_theme_windows() {
-    use adw::{StyleManager, ColorScheme};
-    use windows::UI::ViewManagement::{UISettings, UIColorType};
+    use adw::{ColorScheme, StyleManager};
+    use windows::UI::ViewManagement::{UIColorType, UISettings};
 
     // Get foreground color
     let ui_settings = UISettings::new().unwrap();

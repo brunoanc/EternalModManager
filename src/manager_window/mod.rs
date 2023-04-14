@@ -1,24 +1,26 @@
-use adw::prelude::*;
-use adw::Application;
-use gtk::{ApplicationWindow, ListBox, Widget, Builder, MessageDialog, MessageType, DialogFlags, FileChooserNative, FileChooserAction,
-    ButtonsType, Label, CheckButton, Button, DropTarget, ScrolledWindow};
-use gtk::glib::{self, clone, KeyFile, KeyFileFlags, MainContext};
-use gtk::gdk::{DragAction, FileList, Display, Monitor};
-use gtk::gio::File as GioFile;
-use zip::ZipArchive;
+use std::{
+    env,
+    fs::{self, File},
+    path::{Path, PathBuf},
+    sync::mpsc,
+    thread,
+    time::Duration
+};
+
+use adw::{prelude::*, Application};
+use gtk::{
+    gdk::{Display, DragAction, FileList, Monitor},
+    gio::File as GioFile,
+    glib::{self, clone, KeyFile, KeyFileFlags, MainContext},
+    ApplicationWindow, Builder, Button, ButtonsType, CheckButton, DialogFlags, DropTarget, FileChooserAction,
+    FileChooserNative, Label, ListBox, MessageDialog, MessageType, ScrolledWindow, Widget
+};
+use im::Vector;
 use notify::RecursiveMode;
 use serde_json::{Result, Value};
-use im::Vector;
-use std::{env, thread};
-use std::time::Duration;
-use std::path::{PathBuf, Path};
-use std::fs::{self, File};
-use std::sync::mpsc;
-use crate::mod_list_row::ListBoxRow;
-use crate::model::Model;
-use crate::mod_data::ModData;
-use crate::advanced_window;
-use crate::injector;
+use zip::ZipArchive;
+
+use crate::{advanced_window, injector, mod_data::ModData, mod_list_row::ListBoxRow, model::Model};
 
 // Create manager window
 pub fn create(app: &Application, model: &Model) -> ApplicationWindow {
@@ -53,7 +55,9 @@ pub fn create(app: &Application, model: &Model) -> ApplicationWindow {
         mod_list_scrolled.set_height_request(160);
 
         // Reduce mod description height
-        let mod_description_scrolled = builder.object::<ScrolledWindow>("ModDescriptionScrolled").unwrap();
+        let mod_description_scrolled = builder
+            .object::<ScrolledWindow>("ModDescriptionScrolled")
+            .unwrap();
         mod_description_scrolled.set_min_content_height(50);
         mod_description_scrolled.set_max_content_height(50);
 
@@ -152,7 +156,7 @@ pub fn create(app: &Application, model: &Model) -> ApplicationWindow {
     let listbox = builder.object::<ListBox>("ModList").unwrap();
 
     // Bind listbox to model
-    listbox.bind_model(Some(model),move |item| {
+    listbox.bind_model(Some(model), move |item| {
         ListBoxRow::new(item.downcast_ref::<ModData>().unwrap()).upcast::<Widget>()
     });
 
@@ -206,9 +210,7 @@ pub fn create(app: &Application, model: &Model) -> ApplicationWindow {
     let drop_target = DropTarget::new(FileList::static_type(), DragAction::COPY);
 
     // Filter out non-files
-    drop_target.connect_accept(|_, d| {
-        d.formats().contains_type(FileList::static_type())
-    });
+    drop_target.connect_accept(|_, d| d.formats().contains_type(FileList::static_type()));
 
     // Handle drop event
     drop_target.connect_drop(|_, v, _, _| {
@@ -225,7 +227,13 @@ pub fn create(app: &Application, model: &Model) -> ApplicationWindow {
                 let new_path = mods_folder.join(path.file_name().unwrap());
 
                 // Check if it's already in the target folder
-                if path.parent().unwrap_or_else(|| Path::new("")).canonicalize().unwrap() == mods_folder.canonicalize().unwrap() {
+                if path
+                    .parent()
+                    .unwrap_or_else(|| Path::new(""))
+                    .canonicalize()
+                    .unwrap()
+                    == mods_folder.canonicalize().unwrap()
+                {
                     return false;
                 }
 
@@ -269,7 +277,10 @@ pub fn get_game_path(parent_window: &ApplicationWindow, files: &[GioFile], model
     let mut config_dirs = vec![glib::user_config_dir()];
     config_dirs.append(&mut glib::system_config_dirs());
 
-    if keyfile.load_from_dirs("EternalModManager/config", &config_dirs, KeyFileFlags::NONE).is_ok() {
+    if keyfile
+        .load_from_dirs("EternalModManager/config", &config_dirs, KeyFileFlags::NONE)
+        .is_ok()
+    {
         if let Ok(path) = keyfile.string("settings", "game-path") {
             let path_buf = PathBuf::from(path.to_string());
 
@@ -309,8 +320,13 @@ pub fn get_game_path(parent_window: &ApplicationWindow, files: &[GioFile], model
     parent_window.set_sensitive(false);
 
     // Create dialog
-    let dialog = MessageDialog::new(Some(parent_window), DialogFlags::MODAL | DialogFlags::DESTROY_WITH_PARENT,
-        MessageType::Info, ButtonsType::Ok, "Open the DOOM Eternal game directory.");
+    let dialog = MessageDialog::new(
+        Some(parent_window),
+        DialogFlags::MODAL | DialogFlags::DESTROY_WITH_PARENT,
+        MessageType::Info,
+        ButtonsType::Ok,
+        "Open the DOOM Eternal game directory."
+    );
 
     // Connect to dialog response
     dialog.connect_response(clone!(@weak parent_window, @weak model => move |d, _| {
@@ -380,7 +396,17 @@ pub fn get_game_path(parent_window: &ApplicationWindow, files: &[GioFile], model
 fn save_game_path() {
     // Create config file
     let keyfile = KeyFile::new();
-    keyfile.set_string("settings", "game-path", &crate::GAME_PATH.get().unwrap().clone().into_os_string().into_string().unwrap());
+    keyfile.set_string(
+        "settings",
+        "game-path",
+        &crate::GAME_PATH
+            .get()
+            .unwrap()
+            .clone()
+            .into_os_string()
+            .into_string()
+            .unwrap()
+    );
 
     // Get config directory
     let config_dir = glib::user_config_dir().join("EternalModManager");
@@ -400,20 +426,32 @@ fn save_game_path() {
     }
 
     // Save config file
-    keyfile.save_to_file(config_dir.join("config")).expect("Could not save config file");
+    keyfile
+        .save_to_file(config_dir.join("config"))
+        .expect("Could not save config file");
 }
 
 #[cfg(target_os = "windows")]
 // Check for the modding tools on Windows
 fn check_modding_tools(parent_window: &ApplicationWindow) {
     // Check if injector batch is present
-    if !crate::GAME_PATH.get().unwrap().join("EternalModInjector.bat").is_file() {
+    if !crate::GAME_PATH
+        .get()
+        .unwrap()
+        .join("EternalModInjector.bat")
+        .is_file()
+    {
         // Disable parent window
         parent_window.set_sensitive(false);
 
         // Create error dialog
-        let err_dialog = MessageDialog::new(Some(parent_window), DialogFlags::MODAL | DialogFlags::DESTROY_WITH_PARENT,
-            MessageType::Error, ButtonsType::Ok, "Can't find EternalModInjector.bat.");
+        let err_dialog = MessageDialog::new(
+            Some(parent_window),
+            DialogFlags::MODAL | DialogFlags::DESTROY_WITH_PARENT,
+            MessageType::Error,
+            ButtonsType::Ok,
+            "Can't find EternalModInjector.bat."
+        );
         err_dialog.set_secondary_text(Some("Make sure that the modding tools are installed."));
 
         // Show error dialog
@@ -430,17 +468,28 @@ fn check_modding_tools(parent_window: &ApplicationWindow) {
 #[cfg(target_os = "linux")]
 // Check for the modding tools on Linux (and download them)
 fn check_modding_tools(parent_window: &ApplicationWindow) {
-    use gtk::ResponseType;
     use std::io::Cursor;
 
+    use gtk::ResponseType;
+
     // Check if injector batch is present
-    if !crate::GAME_PATH.get().unwrap().join("EternalModInjectorShell.sh").is_file() {
+    if !crate::GAME_PATH
+        .get()
+        .unwrap()
+        .join("EternalModInjectorShell.sh")
+        .is_file()
+    {
         // Disable parent window
         parent_window.set_sensitive(false);
 
         // Prompt to download modding tools
-        let dialog = MessageDialog::new(Some(parent_window), DialogFlags::MODAL | DialogFlags::DESTROY_WITH_PARENT,
-            MessageType::Question, ButtonsType::YesNo, "Couldn't find the modding tools, do you want to download them?");
+        let dialog = MessageDialog::new(
+            Some(parent_window),
+            DialogFlags::MODAL | DialogFlags::DESTROY_WITH_PARENT,
+            MessageType::Question,
+            ButtonsType::YesNo,
+            "Couldn't find the modding tools, do you want to download them?"
+        );
 
         // Connect to dialog response
         dialog.connect_response(clone!(@weak parent_window => move |d, r| {
@@ -588,8 +637,14 @@ fn is_mod_online_safe(mod_zip: &mut ZipArchive<File>) -> bool {
 
         let container_name = mod_file_entry.split('/').next().unwrap();
         let mod_name = &mod_file_entry[container_name.len() + 1..];
-        let sound_container_path = crate::GAME_PATH.get().unwrap().join("base")
-            .join("sound").join("soundbanks").join("pc").join(format!("{}.snd", container_name));
+        let sound_container_path = crate::GAME_PATH
+            .get()
+            .unwrap()
+            .join("base")
+            .join("sound")
+            .join("soundbanks")
+            .join("pc")
+            .join(format!("{}.snd", container_name));
 
         // Allow sound files
         if sound_container_path.is_file() {
@@ -607,10 +662,19 @@ fn is_mod_online_safe(mod_zip: &mut ZipArchive<File>) -> bool {
         }
 
         // Check if mod is modifying an online-unsafe resource
-        let is_modifying_unsafe_resource = UNSAFE_RESOURCE_KEYWORDS.iter().any(|&k| container_name.starts_with(k));
+        let is_modifying_unsafe_resource = UNSAFE_RESOURCE_KEYWORDS
+            .iter()
+            .any(|&k| container_name.starts_with(k));
 
         // Files with .lwo extension are unsafe
-        if PathBuf::from(&mod_file_entry).extension().unwrap_or_default().to_str().unwrap().contains(".lwo") && is_modifying_unsafe_resource {
+        if PathBuf::from(&mod_file_entry)
+            .extension()
+            .unwrap_or_default()
+            .to_str()
+            .unwrap()
+            .contains(".lwo")
+            && is_modifying_unsafe_resource
+        {
             return false;
         }
 
@@ -620,19 +684,79 @@ fn is_mod_online_safe(mod_zip: &mut ZipArchive<File>) -> bool {
         }
 
         // Do not allow mods to modify non-whitelisted files in unsafe resources
-        static ONLINE_SAFE_KEYWORDS: &[&str] = &["/eternalmod/", ".tga", ".png", ".swf", ".bimage",
-            "/advancedscreenviewshake/", "/audiolog/", "/audiologstory/", "/automap/", "/automapplayerprofile/",
-            "/automapproperties/", "/automapsoundprofile/", "/env/", "/font/", "/fontfx/", "/fx/", "/gameitem/",
-            "/globalfonttable/", "/gorebehavior/", "/gorecontainer/", "/gorewounds/", "/handsbobcycle/",
-            "/highlightlos/", "/highlights/", "/hitconfirmationsoundsinfo/", "/hud/", "/hudelement/", "/lightrig/",
-            "/lodgroup/", "/material2/", "/md6def/", "/modelasset/", "/particle/", "/particlestage/",
-            "/renderlayerdefinition/", "/renderparm/", "/renderparmmeta/", "/renderprogflag/", "/ribbon2/",
-            "/rumble/", "/soundevent/", "/soundpack/", "/soundrtpc/", "/soundstate/", "/soundswitch/", "/speaker/",
-            "/staticimage/", "/swfresources/", "/uianchor/", "/uicolor/", "/weaponreticle/", "/weaponreticleswfinfo/",
-            "/entitydef/light/", "/entitydef/fx", "/entitydef/", "/impacteffect/", "/uiweapon/", "/globalinitialwarehouse/",
-            "/globalshell/", "/warehouseitem/", "/warehouseofflinecontainer/", "/tooltip/", "/livetile/", "/tutorialevent/",
-            "/maps/game/dlc/", "/maps/game/dlc2/", "/maps/game/hub/", "/maps/game/shell/", "/maps/game/sp/",
-            "/maps/game/tutorials/", "/decls/campaign"];
+        static ONLINE_SAFE_KEYWORDS: &[&str] = &[
+            "/eternalmod/",
+            ".tga",
+            ".png",
+            ".swf",
+            ".bimage",
+            "/advancedscreenviewshake/",
+            "/audiolog/",
+            "/audiologstory/",
+            "/automap/",
+            "/automapplayerprofile/",
+            "/automapproperties/",
+            "/automapsoundprofile/",
+            "/env/",
+            "/font/",
+            "/fontfx/",
+            "/fx/",
+            "/gameitem/",
+            "/globalfonttable/",
+            "/gorebehavior/",
+            "/gorecontainer/",
+            "/gorewounds/",
+            "/handsbobcycle/",
+            "/highlightlos/",
+            "/highlights/",
+            "/hitconfirmationsoundsinfo/",
+            "/hud/",
+            "/hudelement/",
+            "/lightrig/",
+            "/lodgroup/",
+            "/material2/",
+            "/md6def/",
+            "/modelasset/",
+            "/particle/",
+            "/particlestage/",
+            "/renderlayerdefinition/",
+            "/renderparm/",
+            "/renderparmmeta/",
+            "/renderprogflag/",
+            "/ribbon2/",
+            "/rumble/",
+            "/soundevent/",
+            "/soundpack/",
+            "/soundrtpc/",
+            "/soundstate/",
+            "/soundswitch/",
+            "/speaker/",
+            "/staticimage/",
+            "/swfresources/",
+            "/uianchor/",
+            "/uicolor/",
+            "/weaponreticle/",
+            "/weaponreticleswfinfo/",
+            "/entitydef/light/",
+            "/entitydef/fx",
+            "/entitydef/",
+            "/impacteffect/",
+            "/uiweapon/",
+            "/globalinitialwarehouse/",
+            "/globalshell/",
+            "/warehouseitem/",
+            "/warehouseofflinecontainer/",
+            "/tooltip/",
+            "/livetile/",
+            "/tutorialevent/",
+            "/maps/game/dlc/",
+            "/maps/game/dlc2/",
+            "/maps/game/hub/",
+            "/maps/game/shell/",
+            "/maps/game/sp/",
+            "/maps/game/tutorials/",
+            "/decls/campaign"
+        ];
 
         if !ONLINE_SAFE_KEYWORDS.iter().any(|&k| mod_name.contains(k)) && is_modifying_unsafe_resource {
             return false;
@@ -649,8 +773,11 @@ fn is_mod_online_safe(mod_zip: &mut ZipArchive<File>) -> bool {
 
             if let Ok(assets_info) = deserialize {
                 if assets_info["resources"].is_array()
-                && !assets_info["resources"].as_array().unwrap().is_empty()
-                && UNSAFE_RESOURCE_KEYWORDS.iter().any(|&k| resource_name.starts_with(k)) {
+                    && !assets_info["resources"].as_array().unwrap().is_empty()
+                    && UNSAFE_RESOURCE_KEYWORDS
+                        .iter()
+                        .any(|&k| resource_name.starts_with(k))
+                {
                     return false;
                 }
             }
@@ -661,7 +788,9 @@ fn is_mod_online_safe(mod_zip: &mut ZipArchive<File>) -> bool {
 }
 
 // Load a mod into the list
-fn load_mod_into_list(mod_path: PathBuf, enabled: bool, only_load_online_safe: bool, mod_list: &mut Vector<ModData>) {
+fn load_mod_into_list(
+    mod_path: PathBuf, enabled: bool, only_load_online_safe: bool, mod_list: &mut Vector<ModData>
+) {
     let file_name = mod_path.file_name().unwrap().to_str().unwrap();
     let mod_data: ModData;
 
@@ -676,22 +805,57 @@ fn load_mod_into_list(mod_path: PathBuf, enabled: bool, only_load_online_safe: b
                 let deserialize: Result<Value> = serde_json::from_reader(eternalmod_file);
 
                 if let Ok(eternalmod) = deserialize {
-                    mod_data = ModData::new(file_name, true, enabled, is_online_safe, only_load_online_safe, eternalmod);
+                    mod_data = ModData::new(
+                        file_name,
+                        true,
+                        enabled,
+                        is_online_safe,
+                        only_load_online_safe,
+                        eternalmod
+                    );
                 }
                 else {
-                    mod_data = ModData::new(file_name, true, enabled, is_online_safe, only_load_online_safe, Value::Null);
+                    mod_data = ModData::new(
+                        file_name,
+                        true,
+                        enabled,
+                        is_online_safe,
+                        only_load_online_safe,
+                        Value::Null
+                    );
                 }
             }
             else {
-                mod_data = ModData::new(file_name, true, enabled, is_online_safe, only_load_online_safe, Value::Null);
+                mod_data = ModData::new(
+                    file_name,
+                    true,
+                    enabled,
+                    is_online_safe,
+                    only_load_online_safe,
+                    Value::Null
+                );
             }
         }
         else {
-            mod_data = ModData::new(file_name, false, enabled, false, only_load_online_safe, Value::Null);
+            mod_data = ModData::new(
+                file_name,
+                false,
+                enabled,
+                false,
+                only_load_online_safe,
+                Value::Null
+            );
         }
     }
     else {
-        mod_data = ModData::new(file_name, false, enabled, false, only_load_online_safe, Value::Null);
+        mod_data = ModData::new(
+            file_name,
+            false,
+            enabled,
+            false,
+            only_load_online_safe,
+            Value::Null
+        );
     }
 
     // Add to list
@@ -704,7 +868,10 @@ fn get_mods(mods_list: &Model) {
     let mut buffer_mod_list = Vector::new();
 
     // Check if only online safe mods should be loaded
-    let settings_path = crate::GAME_PATH.get().unwrap().join("EternalModInjector Settings.txt");
+    let settings_path = crate::GAME_PATH
+        .get()
+        .unwrap()
+        .join("EternalModInjector Settings.txt");
 
     let only_load_online_safe = match fs::read_to_string(settings_path) {
         Ok(settings) => settings.contains(":ONLINE_SAFE=1"),
@@ -712,17 +879,33 @@ fn get_mods(mods_list: &Model) {
     };
 
     // Get enabled mods
-    for mod_file in fs::read_dir(crate::GAME_PATH.get().unwrap().join("Mods")).unwrap().filter_map(|f| f.ok()) {
+    for mod_file in fs::read_dir(crate::GAME_PATH.get().unwrap().join("Mods"))
+        .unwrap()
+        .filter_map(|f| f.ok())
+    {
         load_mod_into_list(mod_file.path(), true, only_load_online_safe, &mut buffer_mod_list);
     }
 
     // Get disabled mods
-    for mod_file in fs::read_dir(crate::GAME_PATH.get().unwrap().join("DisabledMods")).unwrap().filter_map(|f| f.ok()) {
-        load_mod_into_list(mod_file.path(), false, only_load_online_safe, &mut buffer_mod_list);
+    for mod_file in fs::read_dir(crate::GAME_PATH.get().unwrap().join("DisabledMods"))
+        .unwrap()
+        .filter_map(|f| f.ok())
+    {
+        load_mod_into_list(
+            mod_file.path(),
+            false,
+            only_load_online_safe,
+            &mut buffer_mod_list
+        );
     }
 
     // Sort buffer mod list
-    buffer_mod_list.sort_by(|a, b| a.filename().unwrap().to_lowercase().cmp(&b.filename().unwrap().to_lowercase()));
+    buffer_mod_list.sort_by(|a, b| {
+        a.filename()
+            .unwrap()
+            .to_lowercase()
+            .cmp(&b.filename().unwrap().to_lowercase())
+    });
 
     // Replace mod list
     mods_list.replace(&buffer_mod_list);
