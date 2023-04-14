@@ -1,5 +1,3 @@
-
-
 use adw::prelude::*;
 use gtk::{ApplicationWindow, Builder, Button, MessageDialog, DialogFlags, MessageType, ButtonsType, ResponseType, CheckButton, Box, Entry};
 use gtk::glib::{self, clone, MainContext};

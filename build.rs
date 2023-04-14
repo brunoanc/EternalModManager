@@ -13,8 +13,7 @@ fn set_icon() {
 
 // Build script
 fn main() {
-    match env::var("CARGO_CFG_TARGET_OS").unwrap().as_str() {
-        "windows" => set_icon(),
-        _ => ()
+    if Some("windows".to_owned()) == env::var("CARGO_CFG_TARGET_OS").ok() {
+        set_icon();
     }
 }
