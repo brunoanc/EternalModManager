@@ -12,9 +12,9 @@ use std::path::PathBuf;
 use adw::{prelude::*, Application};
 use gtk::{
     gdk::Display,
-    gio::ApplicationFlags,
+    gio::{ApplicationFlags, File},
     glib::{self, ExitCode},
-    CssProvider, StyleContext, Window
+    CssProvider, Window
 };
 use model::Model;
 use once_cell::sync::OnceCell;
@@ -38,50 +38,38 @@ fn main() -> ExitCode {
 
     // Activate callback
     app.connect_activate(|a| {
-        #[cfg(target_os = "windows")]
-        // Set dark theme if needed on Windows
-        set_theme_windows();
-
-        // Set window icon on X11
-        Window::set_default_icon_name("com.powerball253.eternalmodmanager");
-
-        // Create list model
-        let model = Model::new();
-
-        // Create manager window
-        let manager_window = manager_window::create(a, &model);
-
-        // Show window
-        manager_window.present();
-
-        // Get game path
-        manager_window::get_game_path(&manager_window, &[], &model);
+        activate_app(a, &[]);
     });
 
     // Handle arguments
     app.connect_open(|a, f, _| {
-        #[cfg(target_os = "windows")]
-        // Set dark theme if needed on Windows
-        set_theme_windows();
-
-        // Set window icon on X11
-        Window::set_default_icon_name("com.powerball253.eternalmodmanager");
-
-        // Create list model
-        let model = Model::new();
-
-        // Create manager window
-        let manager_window = manager_window::create(a, &model);
-
-        // Show window
-        manager_window.present();
-
-        // Get game path
-        manager_window::get_game_path(&manager_window, f, &model);
+        activate_app(a, f);
     });
 
     // Run app
     app.run()
+}
+
+// Initialize app components
+fn activate_app(app: &Application, files: &[File]) {
+    #[cfg(target_os = "windows")]
+    // Set dark theme if needed on Windows
+    set_theme_windows();
+
+    // Set window icon on X11
+    Window::set_default_icon_name("com.powerball253.eternalmodmanager");
+
+    // Create list model
+    let model = Model::new();
+
+    // Create manager window
+    let manager_window = manager_window::create(app, &model);
+
+    // Show window
+    manager_window.present();
+
+    // Get game path
+    manager_window::get_game_path(&manager_window, files, &model);
 }
 
 #[cfg(target_os = "windows")]
@@ -114,8 +102,7 @@ fn load_css(_: &Application) {
     provider.load_from_data(include_str!("style.css"));
 
     // Load provider to screen
-    #[allow(deprecated)]
-    StyleContext::add_provider_for_display(
+    gtk::style_context_add_provider_for_display(
         &Display::default().unwrap(),
         &provider,
         gtk::STYLE_PROVIDER_PRIORITY_APPLICATION
