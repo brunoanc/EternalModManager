@@ -99,7 +99,7 @@ fn set_theme_windows() {
 fn load_css(_: &Application) {
     // Load css file to provider
     let provider = CssProvider::new();
-    provider.load_from_data(include_str!("style.css"));
+    provider.load_from_string(include_str!("style.css"));
 
     // Load provider to screen
     gtk::style_context_add_provider_for_display(

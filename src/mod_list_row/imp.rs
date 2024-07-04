@@ -3,9 +3,9 @@ use std::{cell::RefCell, fs, path::Path, thread};
 use adw::{prelude::*, subclass::prelude::*};
 use gtk::{
     gdk::{self, Rectangle},
-    gio::{File as GioFile, MenuModel, SimpleAction, SimpleActionGroup},
+    gio::{File as GioFile, MenuModel, SimpleAction, SimpleActionGroup, Cancellable, ListStore},
     glib::{self, clone, ParamSpec, Properties, Value},
-    Builder, CheckButton, EventSequenceState, FileChooserAction, FileChooserNative, FileFilter, GestureClick,
+    Builder, CheckButton, EventSequenceState, FileDialog, FileFilter, GestureClick,
     Grid, Label, PopoverMenu, Window
 };
 
@@ -49,44 +49,45 @@ impl ObjectImpl for ListBoxRow {
         let action_install = SimpleAction::new("install", None);
 
         action_install.connect_activate(clone!(@weak item => move |_, _| {
-            // Create file dialog to select mods
-            let file_dialog = FileChooserNative::new(Some("Open .zip mod files to install"), None::<&Window>, FileChooserAction::Open, Some("Open"), Some("Cancel"));
-
             // Add zip filter
             let zip_filter = FileFilter::new();
             zip_filter.add_suffix("zip");
             zip_filter.set_name(Some("Zip files"));
-            file_dialog.add_filter(&zip_filter);
+            let filter_list = ListStore::new::<FileFilter>();
+            filter_list.append(&zip_filter);
+    
+            // Create file dialog to select mods
+            let file_dialog = FileDialog::builder()
+                .accept_label("Open")
+                .default_filter(&zip_filter)
+                .filters(&filter_list)
+                .title("Open .zip mod files to install")
+                .build();
 
-            // Connect to file dialog response
-            file_dialog.connect_response(clone!(@strong file_dialog => move |_, _| {
-                // Close file dialog
-                file_dialog.destroy();
-
+            file_dialog.open_multiple(None::<&Window>, None::<&Cancellable>, |result| {
                 // Iterate through files
-                for file in file_dialog.files().iter::<GioFile>().filter_map(|f| f.ok()) {
-                    let path = file.path().unwrap();
+                if let Ok(file_list) = result {
+                    for file in file_list.iter::<GioFile>().filter_map(|f| f.ok()) {
+                        let path = file.path().unwrap();
 
-                    // Sanity check
-                    if !path.is_file() {
-                        continue;
+                        // Sanity check
+                        if !path.is_file() {
+                            continue;
+                        }
+
+                        let mods_folder = crate::GAME_PATH.get().unwrap().join("Mods");
+                        let new_path = mods_folder.join(path.file_name().unwrap());
+
+                        // Check if it's already in the target folder
+                        if path.parent().unwrap_or(Path::new("")).canonicalize().unwrap() == mods_folder.canonicalize().unwrap() {
+                            continue;
+                        }
+
+                        // Copy file to Mods folder
+                        thread::spawn(move || fs::copy(&path, &new_path));
                     }
-
-                    let mods_folder = crate::GAME_PATH.get().unwrap().join("Mods");
-                    let new_path = mods_folder.join(path.file_name().unwrap());
-
-                    // Check if it's already in the target folder
-                    if path.parent().unwrap_or(Path::new("")).canonicalize().unwrap() == mods_folder.canonicalize().unwrap() {
-                        continue;
-                    }
-
-                    // Copy file to Mods folder
-                    thread::spawn(move || fs::copy(&path, &new_path));
                 }
-            }));
-
-            // Show file dialog
-            file_dialog.show();
+            });
         }));
 
         // Create action "open" to open mod folder

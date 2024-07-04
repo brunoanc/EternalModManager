@@ -10,10 +10,10 @@ use std::{
 use adw::{prelude::*, Application};
 use gtk::{
     gdk::{Display, DragAction, FileList, Monitor},
-    gio::File as GioFile,
+    gio::{File as GioFile, Cancellable},
     glib::{self, clone, KeyFile, KeyFileFlags, MainContext},
-    ApplicationWindow, Builder, Button, ButtonsType, CheckButton, DialogFlags, DropTarget, FileChooserAction,
-    FileChooserNative, Label, ListBox, MessageDialog, MessageType, ScrolledWindow, Widget
+    ApplicationWindow, Builder, Button, CheckButton, DropTarget,
+    FileDialog, Label, ListBox, AlertDialog, ScrolledWindow, Widget
 };
 use im::Vector;
 use notify::RecursiveMode;
@@ -73,38 +73,34 @@ pub fn create(app: &Application, model: &Model) -> ApplicationWindow {
         // Disable parent window
         window.set_sensitive(false);
 
-        let (sender, receiver) = MainContext::channel(glib::PRIORITY_DEFAULT);
+        let (tx, rx) = mpsc::channel();
 
         // Run injector
         thread::spawn(move || {
-            sender.send(injector::run()).unwrap();
+            tx.send(injector::run()).unwrap();
         });
 
-        receiver.attach(None, clone!(@weak window => @default-return Continue(false), move |success| {
-            if !success {
-                // Create error dialog
-                let err_dialog = MessageDialog::new(Some(&window), DialogFlags::MODAL | DialogFlags::DESTROY_WITH_PARENT,
-                    MessageType::Error, ButtonsType::Ok, "Couldn't find default terminal.");
-                err_dialog.set_secondary_text(Some("Set it using the $TERMINAL environment variable."));
+        MainContext::default().spawn_local(clone!(@weak window => async move {
+            if let Ok(success) = rx.recv() {
+                if !success {
+                    // Create error dialog
+                    let err_dialog = AlertDialog::builder()
+                        .buttons(["Ok"])
+                        .modal(true)
+                        .message("Couldn't find default terminal.")
+                        .detail("Set it using the $TERMINAL environment variable.")
+                        .build();
 
-                // Connect to dialog response
-                err_dialog.connect_response(clone!(@weak window => move |d, _| {
-                    // Destroy window
-                    d.destroy();
-
-                    // Re-enable parent
+                    err_dialog.choose(Some(&window), None::<&Cancellable>, clone!(@weak window => move |_| {
+                        // Re-enable parent
+                        window.set_sensitive(true);
+                    }));
+                }
+                else {
+                    // Re-enable parent window
                     window.set_sensitive(true);
-                }));
-
-                // Show dialog
-                err_dialog.present();
+                }
             }
-            else {
-                // Re-enable parent window
-                window.set_sensitive(true);
-            }
-
-            Continue(true)
         }));
     }));
 
@@ -128,23 +124,17 @@ pub fn create(app: &Application, model: &Model) -> ApplicationWindow {
         // Check if settings file exists
         if !settings_path.is_file() {
             // Create warning dialog
-            let warning_dialog = MessageDialog::new(Some(&window), DialogFlags::MODAL | DialogFlags::DESTROY_WITH_PARENT,
-                MessageType::Warning, ButtonsType::Ok, "Mod injector settings file not found.");
-            warning_dialog.set_secondary_text(Some(
-                "The mod injector settings section will not be available until the mod injector is ran at least once."
-            ));
+            let warning_dialog = AlertDialog::builder()
+                .buttons(["Ok"])
+                .modal(true)
+                .message("Mod injector settings file not found.")
+                .detail("The mod injector settings section will not be available until the mod injector is ran at least once.")
+                .build();
 
-            // Connect to dialog response
-            warning_dialog.connect_response(clone!(@weak advanced_window => move |d, _| {
-                // Destroy window
-                d.destroy();
-
+            warning_dialog.choose(Some(&window), None::<&Cancellable>, clone!(@weak advanced_window => move |_| {
                 // Show advanced window
                 advanced_window.present();
             }));
-
-            // Show dialog
-            warning_dialog.present();
         }
         else {
             // Show advanced window
@@ -320,30 +310,22 @@ pub fn get_game_path(parent_window: &ApplicationWindow, files: &[GioFile], model
     parent_window.set_sensitive(false);
 
     // Create dialog
-    let dialog = MessageDialog::new(
-        Some(parent_window),
-        DialogFlags::MODAL | DialogFlags::DESTROY_WITH_PARENT,
-        MessageType::Info,
-        ButtonsType::Ok,
-        "Open the DOOM Eternal game directory."
-    );
+    let dialog = AlertDialog::builder()
+        .buttons(["Ok"])
+        .modal(true)
+        .message("Open the DOOM Eternal game directory.")
+        .build();
 
-    // Connect to dialog response
-    dialog.connect_response(clone!(@weak parent_window, @weak model => move |d, _| {
-        // Destroy window
-        d.destroy();
-
+    dialog.choose(Some(parent_window), None::<&Cancellable>, clone!(@weak parent_window, @weak model => move |_| {
         // Create file dialog to select folder
-        let file_dialog = FileChooserNative::new(Some("Open the game directory"), Some(&parent_window),
-            FileChooserAction::SelectFolder, Some("Open"), Some("Cancel"));
+        let file_dialog = FileDialog::builder()
+            .accept_label("Open")
+            .title("Open the game directory")
+            .build();
 
-        // Connect to file dialog response
-        file_dialog.connect_response(clone!(@strong file_dialog, @weak parent_window, @weak model => move |_, _| {
-            // Close file dialog
-            file_dialog.destroy();
-
+        file_dialog.select_folder(Some(&parent_window), None::<&Cancellable>, clone!(@strong file_dialog, @weak parent_window, @weak model => move |result| {
             // Set game path
-            if let Some(file) = file_dialog.file() {
+            if let Ok(file) = result {
                 let path = file.path().unwrap();
 
                 if path.is_dir() && path.join("DOOMEternalx64vk.exe").is_file() {
@@ -362,34 +344,24 @@ pub fn get_game_path(parent_window: &ApplicationWindow, files: &[GioFile], model
             // Make sure game path is set now
             if crate::GAME_PATH.get().is_none() {
                 // Create error dialog
-                let err_dialog = MessageDialog::new(Some(&parent_window), DialogFlags::MODAL | DialogFlags::DESTROY_WITH_PARENT,
-                    MessageType::Error, ButtonsType::Ok, "Can't find the game directory.");
-                err_dialog.set_secondary_text(Some("Did you select/pass the correct directory?"));
+                let err_dialog = AlertDialog::builder()
+                    .buttons(["Ok"])
+                    .modal(true)
+                    .message("Can't find the game directory.")
+                    .detail("Did you select/pass the correct directory?")
+                    .build();
 
-                // Connect to dialog response
-                err_dialog.connect_response(clone!(@weak parent_window => move |d, _| {
-                    // Destroy window
-                    d.destroy();
-
+                err_dialog.choose(Some(&parent_window), None::<&Cancellable>, clone!(@weak parent_window => move |_| {
                     // Exit
                     parent_window.close();
                 }));
-
-                // Show dialog
-                err_dialog.present();
             }
             else {
                 // Re-enable parent window
                 parent_window.set_sensitive(true);
             }
         }));
-
-        // Show file dialog
-        file_dialog.show();
     }));
-
-    // Show dialog
-    dialog.present();
 }
 
 // Save game path to config file
@@ -445,20 +417,14 @@ fn check_modding_tools(parent_window: &ApplicationWindow) {
         parent_window.set_sensitive(false);
 
         // Create error dialog
-        let err_dialog = MessageDialog::new(
-            Some(parent_window),
-            DialogFlags::MODAL | DialogFlags::DESTROY_WITH_PARENT,
-            MessageType::Error,
-            ButtonsType::Ok,
-            "Can't find EternalModInjector.bat."
-        );
-        err_dialog.set_secondary_text(Some("Make sure that the modding tools are installed."));
+        let err_dialog = AlertDialog::builder()
+            .buttons(["Ok"])
+            .modal(true)
+            .message("Can't find EternalModInjector.bat.")
+            .detail("Make sure that the modding tools are installed.")
+            .build();
 
-        // Show error dialog
-        err_dialog.connect_response(clone!(@weak parent_window => move |d, _| {
-            // Destroy window
-            d.destroy();
-
+        err_dialog.choose(Some(parent_window), None::<&Cancellable>, clone!(@weak parent_window => move |_| {
             // Exit
             parent_window.close();
         }));
@@ -470,8 +436,6 @@ fn check_modding_tools(parent_window: &ApplicationWindow) {
 fn check_modding_tools(parent_window: &ApplicationWindow) {
     use std::io::Cursor;
 
-    use gtk::ResponseType;
-
     // Check if injector batch is present
     if !crate::GAME_PATH
         .get()
@@ -482,22 +446,18 @@ fn check_modding_tools(parent_window: &ApplicationWindow) {
         // Disable parent window
         parent_window.set_sensitive(false);
 
-        // Prompt to download modding tools
-        let dialog = MessageDialog::new(
-            Some(parent_window),
-            DialogFlags::MODAL | DialogFlags::DESTROY_WITH_PARENT,
-            MessageType::Question,
-            ButtonsType::YesNo,
-            "Couldn't find the modding tools, do you want to download them?"
-        );
+        // Create question dialog
+        let dialog = AlertDialog::builder()
+            .buttons(["Yes", "No"])
+            .cancel_button(1)
+            .default_button(0)
+            .modal(true)
+            .message("Couldn't find the modding tools, do you want to download them?")
+            .build();
 
-        // Connect to dialog response
-        dialog.connect_response(clone!(@weak parent_window => move |d, r| {
-            // Destroy window
-            d.destroy();
-
+        dialog.choose(Some(parent_window), None::<&Cancellable>, clone!(@weak parent_window => move |result| {
             // Check user selection
-            if r == ResponseType::No {
+            if result == Ok(1) {
                 // Exit
                 parent_window.close();
                 return;
@@ -515,21 +475,17 @@ fn check_modding_tools(parent_window: &ApplicationWindow) {
                 // Check for errors
                 if bytes.is_err() {
                     // Create error dialog
-                    let err_dialog = MessageDialog::new(Some(&parent_window), DialogFlags::MODAL | DialogFlags::DESTROY_WITH_PARENT,
-                        MessageType::Error, ButtonsType::Ok, "Failed to download the modding tools.");
-                    err_dialog.set_secondary_text(Some("Make sure that you are connected to the internet."));
+                    let dialog = AlertDialog::builder()
+                        .buttons(["Ok"])
+                        .modal(true)
+                        .message("Failed to download the modding tools.")
+                        .detail("Make sure that you are connected to the internet.")
+                        .build();
 
-                    // Connect to dialog response
-                    err_dialog.connect_response(clone!(@weak parent_window => move |d, _| {
-                        // Destroy window
-                        d.destroy();
-
+                    dialog.choose(Some(&parent_window), None::<&Cancellable>, clone!(@weak parent_window => move |_| {
                         // Exit
                         parent_window.close();
                     }));
-
-                    // Show dialog
-                    err_dialog.present();
 
                     return;
                 }
@@ -539,21 +495,17 @@ fn check_modding_tools(parent_window: &ApplicationWindow) {
                 // Unzip file
                 if ZipArchive::new(&mut content).and_then(|mut z| z.extract(crate::GAME_PATH.get().unwrap())).is_err() {
                     // Create error dialog
-                    let err_dialog = MessageDialog::new(Some(&parent_window), DialogFlags::MODAL | DialogFlags::DESTROY_WITH_PARENT,
-                        MessageType::Error, ButtonsType::Ok, "Failed to download the modding tools.");
-                    err_dialog.set_secondary_text(Some("Make sure that you are connected to the internet."));
+                    let dialog = AlertDialog::builder()
+                        .buttons(["Ok"])
+                        .modal(true)
+                        .message("Failed to download the modding tools.")
+                        .detail("Make sure that you are connected to the internet.")
+                        .build();
 
-                    // Connect to dialog response
-                    err_dialog.connect_response(clone!(@weak parent_window => move |d, _| {
-                        // Destroy window
-                        d.destroy();
-
+                    dialog.choose(Some(&parent_window), None::<&Cancellable>, clone!(@weak parent_window => move |_| {
                         // Exit
                         parent_window.close();
                     }));
-
-                    // Show dialog
-                    err_dialog.present();
 
                     return;
                 }
@@ -562,9 +514,6 @@ fn check_modding_tools(parent_window: &ApplicationWindow) {
                 parent_window.set_sensitive(true);
             }));
         }));
-
-        // Show dialog
-        dialog.present();
     }
 }
 
@@ -586,7 +535,7 @@ fn init_watcher(model: &Model) {
         }
 
         // Create watcher
-        let mut debouncer = notify_debouncer_mini::new_debouncer(Duration::from_millis(100), None, tx).unwrap();
+        let mut debouncer = notify_debouncer_mini::new_debouncer(Duration::from_millis(100), tx).unwrap();
 
         // Watch paths
         debouncer.watcher().watch(&mods_dir, RecursiveMode::NonRecursive).unwrap();

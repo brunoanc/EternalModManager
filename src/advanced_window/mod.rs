@@ -2,6 +2,7 @@ use std::{
     collections::HashMap,
     fs::{self, File},
     io::{BufRead, BufReader},
+    sync::mpsc,
     path::PathBuf,
     thread
 };
@@ -9,9 +10,9 @@ use std::{
 use adw::prelude::*;
 use arboard::Clipboard;
 use gtk::{
+    gio::Cancellable,
     glib::{self, clone, MainContext},
-    ApplicationWindow, Box, Builder, Button, ButtonsType, CheckButton, DialogFlags, Entry, MessageDialog,
-    MessageType, ResponseType
+    ApplicationWindow, Box, Builder, Button, CheckButton, Entry, AlertDialog,
 };
 use walkdir::WalkDir;
 
@@ -97,22 +98,23 @@ pub fn create(parent_window: &ApplicationWindow) -> ApplicationWindow {
     let restore_backups_button = builder.object::<Button>("RestoreBackups").unwrap();
 
     restore_backups_button.connect_clicked(clone!(@weak window => move |button| {
-        // Create error dialog
-        let confirmation_dialog = MessageDialog::new(Some(&window), DialogFlags::MODAL | DialogFlags::DESTROY_WITH_PARENT,
-            MessageType::Question, ButtonsType::YesNo, "Are you sure?");
-        confirmation_dialog.set_secondary_text(Some(concat!(
-            "This will restore your game to vanilla state by restoring the unmodded backed up game files.\n",
-            "This process might take a while depending on the speed of your disk, so please be patient.\n",
-            "Are you sure you want to continue?"
-        )));
+        // Create confirmation prompt
+        let confirmation_dialog = AlertDialog::builder()
+            .buttons(["Yes", "No"])
+            .cancel_button(1)
+            .default_button(1)
+            .modal(true)
+            .message("Are you sure?")
+            .detail(concat!(
+                "This will restore your game to vanilla state by restoring the unmodded backed up game files.\n",
+                "This process might take a while depending on the speed of your disk, so please be patient.\n",
+                "Are you sure you want to continue?"
+            ))
+            .build();
 
-        // Connect to dialog response
-        confirmation_dialog.connect_response(clone!(@weak window, @weak button => move |d, r| {
-            // Destroy window
-            d.destroy();
-
+        confirmation_dialog.choose(Some(&window), None::<&Cancellable>, clone!(@weak window, @weak button => move |result| {
             // Check user selection
-            if r == ResponseType::No {
+            if result == Ok(1) {
                 return;
             }
 
@@ -122,7 +124,7 @@ pub fn create(parent_window: &ApplicationWindow) -> ApplicationWindow {
             // Set button label to indicate backups are being restored
             button.set_label("Restoring backups...");
 
-            let (sender, receiver) = MainContext::channel(glib::PRIORITY_DEFAULT);
+            let (tx, rx) = mpsc::channel();
 
             // Get backups
             thread::spawn(move || {
@@ -136,36 +138,29 @@ pub fn create(parent_window: &ApplicationWindow) -> ApplicationWindow {
                     }
                 }
 
-                sender.send(backups_restored).unwrap();
+                tx.send(backups_restored).unwrap();
             });
 
-            receiver.attach(None, clone!(@weak window => @default-return Continue(false), move |backups_restored| {
-                // Restore label
-                button.set_label("Restore backups");
+            MainContext::default().spawn_local(clone!(@weak window => async move {
+                if let Ok(backups_restored) = rx.recv() {
+                    // Restore label
+                    button.set_label("Restore backups");
 
-                // Create end prompt
-                let dialog = MessageDialog::new(Some(&window), DialogFlags::MODAL | DialogFlags::DESTROY_WITH_PARENT,
-                    MessageType::Info, ButtonsType::Ok, "Done.");
-                dialog.set_secondary_text(Some(&format!("{} backups were restored.", backups_restored)));
+                    // Create end prompt
+                    let dialog = AlertDialog::builder()
+                        .buttons(["Ok"])
+                        .modal(true)
+                        .message("Done.")
+                        .detail(format!("{} backups were restored.", backups_restored))
+                        .build();
 
-                // Connect to dialog response
-                dialog.connect_response(clone!(@weak window => move |d, _| {
-                    // Destroy window
-                    d.destroy();
-
-                    // Re-enable parent window
-                    window.set_sensitive(true);
-                }));
-
-                // Show dialog
-                dialog.present();
-
-                Continue(true)
+                    dialog.choose(Some(&window), None::<&Cancellable>, clone!(@weak window => move |_| {
+                        // Re-enable parent window
+                        window.set_sensitive(true);
+                    }));
+                }
             }));
         }));
-
-        // Show dialog
-        confirmation_dialog.present();
     }));
 
     // Init reset backups button
@@ -173,21 +168,22 @@ pub fn create(parent_window: &ApplicationWindow) -> ApplicationWindow {
 
     reset_backups_button.connect_clicked(clone!(@weak window => move |button| {
         // Create confirmation prompt
-        let confirmation_dialog = MessageDialog::new(Some(&window), DialogFlags::MODAL | DialogFlags::DESTROY_WITH_PARENT,
-            MessageType::Question, ButtonsType::YesNo, "Are you sure?");
-        confirmation_dialog.set_secondary_text(Some(concat!(
-            "This will delete your backed up game files.\n",
-            "The next time mods are injected the backups will be re-created, so make sure to verify your game files after doing this.\n",
-            "Are you sure you want to continue?"
-        )));
+        let confirmation_dialog = AlertDialog::builder()
+            .buttons(["Yes", "No"])
+            .cancel_button(1)
+            .default_button(1)
+            .modal(true)
+            .message("Are you sure?")
+            .detail(concat!(
+                "This will delete your backed up game files.\n",
+                "The next time mods are injected the backups will be re-created, so make sure to verify your game files after doing this.\n",
+                "Are you sure you want to continue?"
+            ))
+            .build();
 
-        // Connect to dialog response
-        confirmation_dialog.connect_response(clone!(@weak window, @weak button => move |d, r| {
-            // Destroy window
-            d.destroy();
-
+        confirmation_dialog.choose(Some(&window), None::<&Cancellable>, clone!(@weak window, @weak button => move |result| {
             // Check user selection
-            if r == ResponseType::No {
+            if result == Ok(1) {
                 return;
             }
 
@@ -197,7 +193,7 @@ pub fn create(parent_window: &ApplicationWindow) -> ApplicationWindow {
             // Set button label to indicate backups are being reset
             button.set_label("Resetting backups...");
 
-            let (sender, receiver) = MainContext::channel(glib::PRIORITY_DEFAULT);
+            let (tx, rx) = mpsc::channel();
 
             // Get backups
             thread::spawn(move || {
@@ -211,36 +207,29 @@ pub fn create(parent_window: &ApplicationWindow) -> ApplicationWindow {
                     }
                 }
 
-                sender.send(backups_deleted).unwrap();
+                tx.send(backups_deleted).unwrap();
             });
 
-            receiver.attach(None, clone!(@weak window => @default-return Continue(false), move |backups_deleted| {
-                // Restore label
-                button.set_label("Reset backups");
+            MainContext::default().spawn_local(clone!(@weak window => async move {
+                if let Ok(backups_deleted) = rx.recv() {
+                    // Restore label
+                    button.set_label("Reset backups");
 
-                // Create end prompt
-                let dialog = MessageDialog::new(Some(&window), DialogFlags::MODAL | DialogFlags::DESTROY_WITH_PARENT,
-                    MessageType::Info, ButtonsType::Ok, "Done.");
-                dialog.set_secondary_text(Some(&format!("{} backups were deleted.", backups_deleted)));
+                    // Create end prompt
+                    let dialog = AlertDialog::builder()
+                        .buttons(["Ok"])
+                        .modal(true)
+                        .message("Done.")
+                        .detail(format!("{} backups were deleted.", backups_deleted))
+                        .build();
 
-                // Connect to dialog response
-                dialog.connect_response(clone!(@weak window => move |d, _| {
-                    // Destroy window
-                    d.destroy();
-
-                    // Re-enable parent window
-                    window.set_sensitive(true);
-                }));
-
-                // Show dialog
-                dialog.present();
-
-                Continue(true)
+                    dialog.choose(Some(&window), None::<&Cancellable>, clone!(@weak window => move |_| {
+                        // Re-enable parent window
+                        window.set_sensitive(true);
+                    }));
+                }
             }));
         }));
-
-        // Show dialog
-        confirmation_dialog.present();
     }));
 
     // Init copy template JSON button
@@ -256,20 +245,17 @@ pub fn create(parent_window: &ApplicationWindow) -> ApplicationWindow {
         window.set_sensitive(false);
 
         // Create dialog
-        let dialog = MessageDialog::new(Some(&window), DialogFlags::MODAL | DialogFlags::DESTROY_WITH_PARENT,
-            MessageType::Info, ButtonsType::Ok, "EternalMod.json template has been copied to your clipboard.");
+        let dialog = AlertDialog::builder()
+            .buttons(["Ok"])
+            .modal(true)
+            .message("Done.")
+            .detail("EternalMod.json template has been copied to your clipboard.")
+            .build();
 
-        // Connect to dialog response
-        dialog.connect_response(clone!(@weak window => move |d, _| {
-            // Destroy window
-            d.destroy();
-
+        dialog.choose(Some(&window), None::<&Cancellable>, clone!(@weak window => move |_| {
             // Re-enable parent window
             window.set_sensitive(true);
         }));
-
-        // Show dialog
-        dialog.present();
     }));
 
     // Init save injector settings button
@@ -280,28 +266,24 @@ pub fn create(parent_window: &ApplicationWindow) -> ApplicationWindow {
         window.set_sensitive(false);
 
         // Save injector settings
-        let (message, message_type) = if save_injector_settings(&checkboxes, &text_entry) {
-            ("Successfully saved the new settings.", MessageType::Info)
+        let message = if save_injector_settings(&checkboxes, &text_entry) {
+            "Successfully saved the new settings."
         }
         else {
-            ("An error happened trying to save the new settings.", MessageType::Error)
+            "An error happened trying to save the new settings."
         };
 
         // Create dialog
-        let dialog = MessageDialog::new(Some(&window), DialogFlags::MODAL | DialogFlags::DESTROY_WITH_PARENT,
-            message_type, ButtonsType::Ok, message);
+        let dialog = AlertDialog::builder()
+            .buttons(["Ok"])
+            .modal(true)
+            .message(message)
+            .build();
 
-        // Connect to dialog response
-        dialog.connect_response(clone!(@weak window => move |d, _| {
-            // Destroy window
-            d.destroy();
-
+        dialog.choose(Some(&window), None::<&Cancellable>, clone!(@weak window => move |_| {
             // Re-enable parent window
             window.set_sensitive(true);
         }));
-
-        // Show dialog
-        dialog.present();
     }));
 
     window

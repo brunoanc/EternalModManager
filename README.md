@@ -37,7 +37,7 @@ Download and extract the .zip file from the latest release to your DOOM Eternal 
 3. Follow the [libadwaita installation instructions](https://gtk-rs.org/gtk4-rs/git/book/libadwaita.html) for your platform.
 4. Clone the repo using:
   ```
-  git clone https://github.com/PowerBall253/EternalModManager.git
+  git clone https://github.com/brunoanc/EternalModManager.git
   cd EternalModManager
   ```
 5. Compile the project using cargo:
