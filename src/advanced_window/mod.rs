@@ -10,7 +10,6 @@ use std::{
 use adw::{prelude::*, AlertDialog, ResponseAppearance};
 use arboard::Clipboard;
 use gtk::{
-    gio::Cancellable,
     glib::{self, clone, MainContext},
     ApplicationWindow, Box, Builder, Button, CheckButton, Entry,
 };
@@ -112,7 +111,12 @@ pub fn create(parent_window: &ApplicationWindow) -> ApplicationWindow {
         confirmation_dialog.add_responses(&[("yes", "_Yes"), ("no", "_No")]);
         confirmation_dialog.set_response_appearance("yes", ResponseAppearance::Destructive);
 
-        confirmation_dialog.choose(&window, None::<&Cancellable>, clone!(@weak window, @weak button => move |result| {
+        // WORKAROUND: AlertDialog's close response doesn't work
+        confirmation_dialog.connect_destroy(|dialog| {
+            dialog.emit_by_name::<()>("response", &[&dialog.close_response()]);
+        });
+
+        confirmation_dialog.connect_response(None, clone!(@weak window, @weak button => move |_, result| {
             // Check user selection
             if result == "no" {
                 return;
@@ -156,13 +160,22 @@ pub fn create(parent_window: &ApplicationWindow) -> ApplicationWindow {
 
                     dialog.add_responses(&[("ok", "_Ok")]);
 
-                    dialog.choose(&window, None::<&Cancellable>, clone!(@weak window => move |_| {
+                    // WORKAROUND: AlertDialog's close response doesn't work
+                    dialog.connect_destroy(|dialog| {
+                        dialog.emit_by_name::<()>("response", &[&dialog.close_response()]);
+                    });
+
+                    dialog.connect_response(None, clone!(@weak window => move |_, _| {
                         // Re-enable parent window
                         window.set_sensitive(true);
                     }));
+
+                    dialog.present(&window);
                 }
             }));
         }));
+
+        confirmation_dialog.present(&window);
     }));
 
     // Init reset backups button
@@ -184,7 +197,12 @@ pub fn create(parent_window: &ApplicationWindow) -> ApplicationWindow {
         confirmation_dialog.add_responses(&[("yes", "_Yes"), ("no", "_No")]);
         confirmation_dialog.set_response_appearance("yes", ResponseAppearance::Destructive);
 
-        confirmation_dialog.choose(&window, None::<&Cancellable>, clone!(@weak window, @weak button => move |result| {
+        // WORKAROUND: AlertDialog's close response doesn't work
+        confirmation_dialog.connect_destroy(|dialog| {
+            dialog.emit_by_name::<()>("response", &[&dialog.close_response()]);
+        });
+
+        confirmation_dialog.connect_response(None, clone!(@weak window, @weak button => move |_, result| {
             // Check user selection
             if result == "no" {
                 return;
@@ -228,13 +246,22 @@ pub fn create(parent_window: &ApplicationWindow) -> ApplicationWindow {
 
                     dialog.add_responses(&[("ok", "_Ok")]);
 
-                    dialog.choose(&window, None::<&Cancellable>, clone!(@weak window => move |_| {
+                    // WORKAROUND: AlertDialog's close response doesn't work
+                    dialog.connect_destroy(|dialog| {
+                        dialog.emit_by_name::<()>("response", &[&dialog.close_response()]);
+                    });
+
+                    dialog.connect_response(None, clone!(@weak window => move |_, _| {
                         // Re-enable parent window
                         window.set_sensitive(true);
                     }));
+
+                    dialog.present(&window);
                 }
             }));
         }));
+
+        confirmation_dialog.present(&window);
     }));
 
     // Init copy template JSON button
@@ -259,10 +286,17 @@ pub fn create(parent_window: &ApplicationWindow) -> ApplicationWindow {
 
         dialog.add_responses(&[("ok", "_Ok")]);
 
-        dialog.choose(&window, None::<&Cancellable>, clone!(@weak window => move |_| {
+        // WORKAROUND: AlertDialog's close response doesn't work
+        dialog.connect_destroy(|dialog| {
+            dialog.emit_by_name::<()>("response", &[&dialog.close_response()]);
+        });
+
+        dialog.connect_response(None, clone!(@weak window => move |_, _| {
             // Re-enable parent window
             window.set_sensitive(true);
         }));
+
+        dialog.present(&window);
     }));
 
     // Init save injector settings button
@@ -289,10 +323,17 @@ pub fn create(parent_window: &ApplicationWindow) -> ApplicationWindow {
 
         dialog.add_responses(&[("ok", "_Ok")]);
 
-        dialog.choose(&window, None::<&Cancellable>, clone!(@weak window => move |_| {
+        // WORKAROUND: AlertDialog's close response doesn't work
+        dialog.connect_destroy(|dialog| {
+            dialog.emit_by_name::<()>("response", &[&dialog.close_response()]);
+        });
+
+        dialog.connect_response(None, clone!(@weak window => move |_, _| {
             // Re-enable parent window
             window.set_sensitive(true);
         }));
+
+        dialog.present(&window);
     }));
 
     window

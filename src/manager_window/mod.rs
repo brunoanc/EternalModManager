@@ -93,10 +93,17 @@ pub fn create(app: &Application, model: &Model) -> ApplicationWindow {
 
                     err_dialog.add_responses(&[("ok", "_Ok")]);
 
-                    err_dialog.choose(&window, None::<&Cancellable>, clone!(@weak window => move |_| {
+                    // WORKAROUND: AlertDialog's close response doesn't work
+                    err_dialog.connect_destroy(|dialog| {
+                        dialog.emit_by_name::<()>("response", &[&dialog.close_response()]);
+                    });
+
+                    err_dialog.connect_response(None, clone!(@weak window => move |_, _| {
                         // Re-enable parent
                         window.set_sensitive(true);
                     }));
+
+                    err_dialog.present(&window);
                 }
                 else {
                     // Re-enable parent window
@@ -136,10 +143,17 @@ pub fn create(app: &Application, model: &Model) -> ApplicationWindow {
 
             warning_dialog.add_responses(&[("ok", "_Ok")]);
 
-            warning_dialog.choose(&window, None::<&Cancellable>, clone!(@weak advanced_window => move |_| {
+            // WORKAROUND: AlertDialog's close response doesn't work
+            warning_dialog.connect_destroy(|dialog| {
+                dialog.emit_by_name::<()>("response", &[&dialog.close_response()]);
+            });
+
+            warning_dialog.connect_response(None, clone!(@weak advanced_window => move |_, _| {
                 // Show advanced window
                 advanced_window.present();
             }));
+
+            warning_dialog.present(&window);
         }
         else {
             // Show advanced window
@@ -323,7 +337,12 @@ pub fn get_game_path(parent_window: &ApplicationWindow, files: &[GioFile], model
 
     dialog.add_responses(&[("ok", "_Ok")]);
 
-    dialog.choose(parent_window, None::<&Cancellable>, clone!(@weak parent_window, @weak model => move |_| {
+    // WORKAROUND: AlertDialog's close response doesn't work
+    dialog.connect_destroy(|dialog| {
+        dialog.emit_by_name::<()>("response", &[&dialog.close_response()]);
+    });
+
+    dialog.connect_response(None, clone!(@weak parent_window, @weak model => move |_, _| {
         // Create file dialog to select folder
         let file_dialog = FileDialog::builder()
             .accept_label("Open")
@@ -360,10 +379,17 @@ pub fn get_game_path(parent_window: &ApplicationWindow, files: &[GioFile], model
 
                 err_dialog.add_responses(&[("ok", "_Ok")]);
 
-                err_dialog.choose(&parent_window, None::<&Cancellable>, clone!(@weak parent_window => move |_| {
+                // WORKAROUND: AlertDialog's close response doesn't work
+                err_dialog.connect_destroy(|dialog| {
+                    dialog.emit_by_name::<()>("response", &[&dialog.close_response()]);
+                });
+
+                err_dialog.connect_response(None, clone!(@weak parent_window => move |_, _| {
                     // Exit
                     parent_window.close();
                 }));
+
+                err_dialog.present(&parent_window);
             }
             else {
                 // Re-enable parent window
@@ -371,6 +397,8 @@ pub fn get_game_path(parent_window: &ApplicationWindow, files: &[GioFile], model
             }
         }));
     }));
+
+    dialog.present(parent_window);
 }
 
 // Save game path to config file
@@ -435,10 +463,17 @@ fn check_modding_tools(parent_window: &ApplicationWindow) {
 
         err_dialog.add_responses(&[("ok", "_Ok")]);
 
-        err_dialog.choose(parent_window, None::<&Cancellable>, clone!(@weak parent_window => move |_| {
+        // WORKAROUND: AlertDialog's close response doesn't work
+        err_dialog.connect_destroy(|dialog| {
+            dialog.emit_by_name::<()>("response", &[&dialog.close_response()]);
+        });
+
+        err_dialog.connect_response(None, clone!(@weak parent_window => move |_, _| {
             // Exit
             parent_window.close();
         }));
+
+        err_dialog.present(parent_window);
     }
 }
 
@@ -468,7 +503,12 @@ fn check_modding_tools(parent_window: &ApplicationWindow) {
         dialog.add_responses(&[("yes", "_Yes"), ("no", "_No")]);
         dialog.set_response_appearance("yes", ResponseAppearance::Suggested);
 
-        dialog.choose(parent_window, None::<&Cancellable>, clone!(@weak parent_window => move |result| {
+        // WORKAROUND: AlertDialog's close response doesn't work
+        dialog.connect_destroy(|dialog| {
+            dialog.emit_by_name::<()>("response", &[&dialog.close_response()]);
+        });
+
+        dialog.connect_response(None, clone!(@weak parent_window => move |_, result| {
             // Check user selection
             if result == "no" {
                 // Exit
@@ -497,10 +537,17 @@ fn check_modding_tools(parent_window: &ApplicationWindow) {
 
                     err_dialog.add_responses(&[("ok", "_Ok")]);
 
-                    err_dialog.choose(&parent_window, None::<&Cancellable>, clone!(@weak parent_window => move |_| {
+                    // WORKAROUND: AlertDialog's close response doesn't work
+                    err_dialog.connect_destroy(|dialog| {
+                        dialog.emit_by_name::<()>("response", &[&dialog.close_response()]);
+                    });
+
+                    err_dialog.connect_response(None, clone!(@weak parent_window => move |_, _| {
                         // Exit
                         parent_window.close();
                     }));
+
+                    err_dialog.present(&parent_window);
 
                     return;
                 }
@@ -519,10 +566,17 @@ fn check_modding_tools(parent_window: &ApplicationWindow) {
 
                     err_dialog.add_responses(&[("ok", "_Ok")]);
 
-                    err_dialog.choose(&parent_window, None::<&Cancellable>, clone!(@weak parent_window => move |_| {
+                    // WORKAROUND: AlertDialog's close response doesn't work
+                    err_dialog.connect_destroy(|dialog| {
+                        dialog.emit_by_name::<()>("response", &[&dialog.close_response()]);
+                    });
+
+                    err_dialog.connect_response(None, clone!(@weak parent_window => move |_, _| {
                         // Exit
                         parent_window.close();
                     }));
+
+                    err_dialog.present(&parent_window);
 
                     return;
                 }
@@ -531,6 +585,8 @@ fn check_modding_tools(parent_window: &ApplicationWindow) {
                 parent_window.set_sensitive(true);
             }));
         }));
+
+        dialog.present(parent_window);
     }
 }
 

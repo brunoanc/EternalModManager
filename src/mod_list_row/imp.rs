@@ -55,7 +55,7 @@ impl ObjectImpl for ListBoxRow {
             zip_filter.set_name(Some("Zip files"));
             let filter_list = ListStore::new::<FileFilter>();
             filter_list.append(&zip_filter);
-    
+
             // Create file dialog to select mods
             let file_dialog = FileDialog::builder()
                 .accept_label("Open")
