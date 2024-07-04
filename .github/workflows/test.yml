@@ -13,9 +13,6 @@ env:
 jobs:
   ubuntu-test:
     runs-on: ubuntu-latest
-    container:
-      image: ubuntu:22.10
-      options: --device /dev/fuse --privileged
 
     defaults:
       run:
