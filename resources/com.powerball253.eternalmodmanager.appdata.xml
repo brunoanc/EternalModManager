@@ -1,16 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Copyright 2023 PowerBall253 -->
-<component type="desktop">
+<component type="desktop-application">
   <id>com.powerball253.eternalmodmanager</id>
   <launchable type="desktop-id">com.powerball253.eternalmodmanager.desktop</launchable>
   <name>EternalModManager</name>
   <project_license>MIT</project_license>
   <developer_name>PowerBall253</developer_name>
-  <summary>Cross platform mod manager for DOOM Eternal.</summary>
+  <developer id="io.github.powerball253">
+    <name>PowerBall253</name>
+  </developer>
+  <summary>Cross platform mod manager for DOOM Eternal</summary>
   <metadata_license>CC0-1.0</metadata_license>
   <url type="homepage">https://github.com/PowerBall253/EternalModManager</url>
   <url type="help">https://github.com/PowerBall253/EternalModManager/issues</url>
   <url type="bugtracker">https://github.com/PowerBall253/EternalModManager/issues</url>
+  <url type="vcs-browser">https://github.com/PowerBall253/EternalModManager</url>
   <description>
     <p>A cross platform mod manager for DOOM Eternal, making it easier to set-up and install mods in both Windows and Linux.</p>
   </description>
