@@ -7,12 +7,12 @@ use std::{
     thread
 };
 
-use adw::prelude::*;
+use adw::{prelude::*, AlertDialog, ResponseAppearance};
 use arboard::Clipboard;
 use gtk::{
     gio::Cancellable,
     glib::{self, clone, MainContext},
-    ApplicationWindow, Box, Builder, Button, CheckButton, Entry, AlertDialog,
+    ApplicationWindow, Box, Builder, Button, CheckButton, Entry,
 };
 use walkdir::WalkDir;
 
@@ -98,23 +98,23 @@ pub fn create(parent_window: &ApplicationWindow) -> ApplicationWindow {
     let restore_backups_button = builder.object::<Button>("RestoreBackups").unwrap();
 
     restore_backups_button.connect_clicked(clone!(@weak window => move |button| {
-        // Create confirmation prompt
         let confirmation_dialog = AlertDialog::builder()
-            .buttons(["Yes", "No"])
-            .cancel_button(1)
-            .default_button(1)
-            .modal(true)
-            .message("Are you sure?")
-            .detail(concat!(
+            .heading("Are you sure?")
+            .body(concat!(
                 "This will restore your game to vanilla state by restoring the unmodded backed up game files.\n",
                 "This process might take a while depending on the speed of your disk, so please be patient.\n",
                 "Are you sure you want to continue?"
             ))
+            .default_response("no")
+            .close_response("no")
             .build();
 
-        confirmation_dialog.choose(Some(&window), None::<&Cancellable>, clone!(@weak window, @weak button => move |result| {
+        confirmation_dialog.add_responses(&[("yes", "_Yes"), ("no", "_No")]);
+        confirmation_dialog.set_response_appearance("yes", ResponseAppearance::Destructive);
+
+        confirmation_dialog.choose(&window, None::<&Cancellable>, clone!(@weak window, @weak button => move |result| {
             // Check user selection
-            if result == Ok(1) {
+            if result == "no" {
                 return;
             }
 
@@ -148,13 +148,15 @@ pub fn create(parent_window: &ApplicationWindow) -> ApplicationWindow {
 
                     // Create end prompt
                     let dialog = AlertDialog::builder()
-                        .buttons(["Ok"])
-                        .modal(true)
-                        .message("Done.")
-                        .detail(format!("{} backups were restored.", backups_restored))
+                        .heading("Done.")
+                        .body(format!("{} backups were restored.", backups_restored))
+                        .default_response("ok")
+                        .close_response("ok")
                         .build();
 
-                    dialog.choose(Some(&window), None::<&Cancellable>, clone!(@weak window => move |_| {
+                    dialog.add_responses(&[("ok", "_Ok")]);
+
+                    dialog.choose(&window, None::<&Cancellable>, clone!(@weak window => move |_| {
                         // Re-enable parent window
                         window.set_sensitive(true);
                     }));
@@ -169,21 +171,22 @@ pub fn create(parent_window: &ApplicationWindow) -> ApplicationWindow {
     reset_backups_button.connect_clicked(clone!(@weak window => move |button| {
         // Create confirmation prompt
         let confirmation_dialog = AlertDialog::builder()
-            .buttons(["Yes", "No"])
-            .cancel_button(1)
-            .default_button(1)
-            .modal(true)
-            .message("Are you sure?")
-            .detail(concat!(
+            .heading("Are you sure?")
+            .body(concat!(
                 "This will delete your backed up game files.\n",
                 "The next time mods are injected the backups will be re-created, so make sure to verify your game files after doing this.\n",
                 "Are you sure you want to continue?"
             ))
+            .default_response("no")
+            .close_response("no")
             .build();
 
-        confirmation_dialog.choose(Some(&window), None::<&Cancellable>, clone!(@weak window, @weak button => move |result| {
+        confirmation_dialog.add_responses(&[("yes", "_Yes"), ("no", "_No")]);
+        confirmation_dialog.set_response_appearance("yes", ResponseAppearance::Destructive);
+
+        confirmation_dialog.choose(&window, None::<&Cancellable>, clone!(@weak window, @weak button => move |result| {
             // Check user selection
-            if result == Ok(1) {
+            if result == "no" {
                 return;
             }
 
@@ -217,13 +220,15 @@ pub fn create(parent_window: &ApplicationWindow) -> ApplicationWindow {
 
                     // Create end prompt
                     let dialog = AlertDialog::builder()
-                        .buttons(["Ok"])
-                        .modal(true)
-                        .message("Done.")
-                        .detail(format!("{} backups were deleted.", backups_deleted))
+                        .heading("Done.")
+                        .body(format!("{} backups were deleted.", backups_deleted))
+                        .default_response("ok")
+                        .close_response("ok")
                         .build();
 
-                    dialog.choose(Some(&window), None::<&Cancellable>, clone!(@weak window => move |_| {
+                    dialog.add_responses(&[("ok", "_Ok")]);
+
+                    dialog.choose(&window, None::<&Cancellable>, clone!(@weak window => move |_| {
                         // Re-enable parent window
                         window.set_sensitive(true);
                     }));
@@ -246,13 +251,15 @@ pub fn create(parent_window: &ApplicationWindow) -> ApplicationWindow {
 
         // Create dialog
         let dialog = AlertDialog::builder()
-            .buttons(["Ok"])
-            .modal(true)
-            .message("Done.")
-            .detail("EternalMod.json template has been copied to your clipboard.")
+            .heading("Done.")
+            .body("EternalMod.json template has been copied to your clipboard.")
+            .default_response("ok")
+            .close_response("ok")
             .build();
 
-        dialog.choose(Some(&window), None::<&Cancellable>, clone!(@weak window => move |_| {
+        dialog.add_responses(&[("ok", "_Ok")]);
+
+        dialog.choose(&window, None::<&Cancellable>, clone!(@weak window => move |_| {
             // Re-enable parent window
             window.set_sensitive(true);
         }));
@@ -275,12 +282,14 @@ pub fn create(parent_window: &ApplicationWindow) -> ApplicationWindow {
 
         // Create dialog
         let dialog = AlertDialog::builder()
-            .buttons(["Ok"])
-            .modal(true)
-            .message(message)
+            .heading(message)
+            .default_response("ok")
+            .close_response("ok")
             .build();
 
-        dialog.choose(Some(&window), None::<&Cancellable>, clone!(@weak window => move |_| {
+        dialog.add_responses(&[("ok", "_Ok")]);
+
+        dialog.choose(&window, None::<&Cancellable>, clone!(@weak window => move |_| {
             // Re-enable parent window
             window.set_sensitive(true);
         }));
