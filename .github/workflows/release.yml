@@ -19,8 +19,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          apt -y update
-          apt -y install build-essential kmod curl wget libssl-dev libadwaita-1-dev fuse file libfuse2
+          sudo apt -y update
+          sudo apt -y install build-essential kmod curl wget libssl-dev libadwaita-1-dev fuse file libfuse2
 
       - name: Install Rust
         run: |
