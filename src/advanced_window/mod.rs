@@ -116,7 +116,7 @@ pub fn create(parent_window: &ApplicationWindow) -> ApplicationWindow {
             dialog.emit_by_name::<()>("response", &[&dialog.close_response()]);
         });
 
-        confirmation_dialog.connect_response(None, clone!(@weak window, @weak button => move |_, result| {
+        let signal = confirmation_dialog.connect_response(None, clone!(@weak window, @weak button => move |_, result| {
             // Check user selection
             if result == "no" {
                 return;
@@ -165,15 +165,25 @@ pub fn create(parent_window: &ApplicationWindow) -> ApplicationWindow {
                         dialog.emit_by_name::<()>("response", &[&dialog.close_response()]);
                     });
 
-                    dialog.connect_response(None, clone!(@weak window => move |_, _| {
+                    let signal = dialog.connect_response(None, clone!(@weak window => move |_, _| {
                         // Re-enable parent window
                         window.set_sensitive(true);
                     }));
+
+                    // WORKAROUND: AlertDialog's close response doesn't work
+                    dialog.connect_response(None, move |d, _| {
+                        d.block_signal(&signal);
+                    });
 
                     dialog.present(&window);
                 }
             }));
         }));
+
+        // WORKAROUND: AlertDialog's close response doesn't work
+        confirmation_dialog.connect_response(None, move |d, _| {
+            d.block_signal(&signal);
+        });
 
         confirmation_dialog.present(&window);
     }));
@@ -202,7 +212,7 @@ pub fn create(parent_window: &ApplicationWindow) -> ApplicationWindow {
             dialog.emit_by_name::<()>("response", &[&dialog.close_response()]);
         });
 
-        confirmation_dialog.connect_response(None, clone!(@weak window, @weak button => move |_, result| {
+        let signal = confirmation_dialog.connect_response(None, clone!(@weak window, @weak button => move |_, result| {
             // Check user selection
             if result == "no" {
                 return;
@@ -251,15 +261,25 @@ pub fn create(parent_window: &ApplicationWindow) -> ApplicationWindow {
                         dialog.emit_by_name::<()>("response", &[&dialog.close_response()]);
                     });
 
-                    dialog.connect_response(None, clone!(@weak window => move |_, _| {
+                    let signal = dialog.connect_response(None, clone!(@weak window => move |_, _| {
                         // Re-enable parent window
                         window.set_sensitive(true);
                     }));
+
+                    // WORKAROUND: AlertDialog's close response doesn't work
+                    dialog.connect_response(None, move |d, _| {
+                        d.block_signal(&signal);
+                    });
 
                     dialog.present(&window);
                 }
             }));
         }));
+
+        // WORKAROUND: AlertDialog's close response doesn't work
+        confirmation_dialog.connect_response(None, move |d, _| {
+            d.block_signal(&signal);
+        });
 
         confirmation_dialog.present(&window);
     }));
@@ -291,10 +311,15 @@ pub fn create(parent_window: &ApplicationWindow) -> ApplicationWindow {
             dialog.emit_by_name::<()>("response", &[&dialog.close_response()]);
         });
 
-        dialog.connect_response(None, clone!(@weak window => move |_, _| {
+        let signal = dialog.connect_response(None, clone!(@weak window => move |_, _| {
             // Re-enable parent window
             window.set_sensitive(true);
         }));
+
+        // WORKAROUND: AlertDialog's close response doesn't work
+        dialog.connect_response(None, move |d, _| {
+            d.block_signal(&signal);
+        });
 
         dialog.present(&window);
     }));
@@ -328,10 +353,15 @@ pub fn create(parent_window: &ApplicationWindow) -> ApplicationWindow {
             dialog.emit_by_name::<()>("response", &[&dialog.close_response()]);
         });
 
-        dialog.connect_response(None, clone!(@weak window => move |_, _| {
+        let signal = dialog.connect_response(None, clone!(@weak window => move |_, _| {
             // Re-enable parent window
             window.set_sensitive(true);
         }));
+
+        // WORKAROUND: AlertDialog's close response doesn't work
+        dialog.connect_response(None, move |d, _| {
+            d.block_signal(&signal);
+        });
 
         dialog.present(&window);
     }));

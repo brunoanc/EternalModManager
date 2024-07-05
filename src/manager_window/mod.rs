@@ -98,10 +98,15 @@ pub fn create(app: &Application, model: &Model) -> ApplicationWindow {
                         dialog.emit_by_name::<()>("response", &[&dialog.close_response()]);
                     });
 
-                    err_dialog.connect_response(None, clone!(@weak window => move |_, _| {
+                    let signal = err_dialog.connect_response(None, clone!(@weak window => move |_, _| {
                         // Re-enable parent
                         window.set_sensitive(true);
                     }));
+
+                    // WORKAROUND: AlertDialog's close response doesn't work
+                    err_dialog.connect_response(None, move |d, _| {
+                        d.block_signal(&signal);
+                    });
 
                     err_dialog.present(&window);
                 }
@@ -148,10 +153,15 @@ pub fn create(app: &Application, model: &Model) -> ApplicationWindow {
                 dialog.emit_by_name::<()>("response", &[&dialog.close_response()]);
             });
 
-            warning_dialog.connect_response(None, clone!(@weak advanced_window => move |_, _| {
+            let signal = warning_dialog.connect_response(None, clone!(@weak advanced_window => move |_, _| {
                 // Show advanced window
                 advanced_window.present();
             }));
+
+            // WORKAROUND: AlertDialog's close response doesn't work
+            warning_dialog.connect_response(None, move |d, _| {
+                d.block_signal(&signal);
+            });
 
             warning_dialog.present(&window);
         }
@@ -342,7 +352,7 @@ pub fn get_game_path(parent_window: &ApplicationWindow, files: &[GioFile], model
         dialog.emit_by_name::<()>("response", &[&dialog.close_response()]);
     });
 
-    dialog.connect_response(None, clone!(@weak parent_window, @weak model => move |_, _| {
+    let signal = dialog.connect_response(None, clone!(@weak parent_window, @weak model => move |_, _| {
         // Create file dialog to select folder
         let file_dialog = FileDialog::builder()
             .accept_label("Open")
@@ -384,10 +394,15 @@ pub fn get_game_path(parent_window: &ApplicationWindow, files: &[GioFile], model
                     dialog.emit_by_name::<()>("response", &[&dialog.close_response()]);
                 });
 
-                err_dialog.connect_response(None, clone!(@weak parent_window => move |_, _| {
+                let signal = err_dialog.connect_response(None, clone!(@weak parent_window => move |_, _| {
                     // Exit
                     parent_window.close();
                 }));
+
+                // WORKAROUND: AlertDialog's close response doesn't work
+                err_dialog.connect_response(None, move |d, _| {
+                    d.block_signal(&signal);
+                });
 
                 err_dialog.present(&parent_window);
             }
@@ -397,6 +412,11 @@ pub fn get_game_path(parent_window: &ApplicationWindow, files: &[GioFile], model
             }
         }));
     }));
+
+    // WORKAROUND: AlertDialog's close response doesn't work
+    dialog.connect_response(None, move |d, _| {
+        d.block_signal(&signal);
+    });
 
     dialog.present(parent_window);
 }
@@ -468,10 +488,15 @@ fn check_modding_tools(parent_window: &ApplicationWindow) {
             dialog.emit_by_name::<()>("response", &[&dialog.close_response()]);
         });
 
-        err_dialog.connect_response(None, clone!(@weak parent_window => move |_, _| {
+        let signal = err_dialog.connect_response(None, clone!(@weak parent_window => move |_, _| {
             // Exit
             parent_window.close();
         }));
+
+        // WORKAROUND: AlertDialog's close response doesn't work
+        err_dialog.connect_response(None, move |d, _| {
+            d.block_signal(&signal);
+        });
 
         err_dialog.present(parent_window);
     }
@@ -508,7 +533,7 @@ fn check_modding_tools(parent_window: &ApplicationWindow) {
             dialog.emit_by_name::<()>("response", &[&dialog.close_response()]);
         });
 
-        dialog.connect_response(None, clone!(@weak parent_window => move |_, result| {
+        let signal = dialog.connect_response(None, clone!(@weak parent_window => move |_, result| {
             // Check user selection
             if result == "no" {
                 // Exit
@@ -542,10 +567,15 @@ fn check_modding_tools(parent_window: &ApplicationWindow) {
                         dialog.emit_by_name::<()>("response", &[&dialog.close_response()]);
                     });
 
-                    err_dialog.connect_response(None, clone!(@weak parent_window => move |_, _| {
+                    let signal = err_dialog.connect_response(None, clone!(@weak parent_window => move |_, _| {
                         // Exit
                         parent_window.close();
                     }));
+
+                    // WORKAROUND: AlertDialog's close response doesn't work
+                    err_dialog.connect_response(None, move |d, _| {
+                        d.block_signal(&signal);
+                    });
 
                     err_dialog.present(&parent_window);
 
@@ -571,10 +601,15 @@ fn check_modding_tools(parent_window: &ApplicationWindow) {
                         dialog.emit_by_name::<()>("response", &[&dialog.close_response()]);
                     });
 
-                    err_dialog.connect_response(None, clone!(@weak parent_window => move |_, _| {
+                    let signal = err_dialog.connect_response(None, clone!(@weak parent_window => move |_, _| {
                         // Exit
                         parent_window.close();
                     }));
+
+                    // WORKAROUND: AlertDialog's close response doesn't work
+                    err_dialog.connect_response(None, move |d, _| {
+                        d.block_signal(&signal);
+                    });
 
                     err_dialog.present(&parent_window);
 
@@ -585,6 +620,11 @@ fn check_modding_tools(parent_window: &ApplicationWindow) {
                 parent_window.set_sensitive(true);
             }));
         }));
+
+        // WORKAROUND: AlertDialog's close response doesn't work
+        dialog.connect_response(None, move |d, _| {
+            d.block_signal(&signal);
+        });
 
         dialog.present(parent_window);
     }
