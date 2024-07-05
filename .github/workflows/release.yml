@@ -68,7 +68,7 @@ jobs:
           tag: ${{ github.ref }}
 
   snap-build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
       - name: Clone repo
@@ -95,7 +95,7 @@ jobs:
       - name: Build with Docker image
         uses: addnab/docker-run-action@v3
         with:
-            image: mglolenstine/gtk4-cross:rust-gtk-4.8
+            image: mglolenstine/gtk4-cross:rust-gtk-4.12
             options: -v ${{ github.workspace }}:/mnt
             run: |
                 build
