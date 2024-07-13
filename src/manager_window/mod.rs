@@ -69,7 +69,7 @@ pub fn create(app: &Application, model: &Model) -> ApplicationWindow {
     // Init run mod injector button
     let injector_button = builder.object::<Button>("RunInjector").unwrap();
 
-    injector_button.connect_clicked(clone!(@weak window => move |_| {
+    injector_button.connect_clicked(clone!(#[weak] window, move |_| {
         // Disable parent window
         window.set_sensitive(false);
 
@@ -80,7 +80,7 @@ pub fn create(app: &Application, model: &Model) -> ApplicationWindow {
             tx.send(injector::run()).unwrap();
         });
 
-        MainContext::default().spawn_local(clone!(@weak window => async move {
+        MainContext::default().spawn_local(clone!(#[weak] window, async move {
             if let Ok(success) = rx.recv() {
                 if !success {
                     // Create error dialog
@@ -98,7 +98,7 @@ pub fn create(app: &Application, model: &Model) -> ApplicationWindow {
                         dialog.emit_by_name::<()>("response", &[&dialog.close_response()]);
                     });
 
-                    let signal = err_dialog.connect_response(None, clone!(@weak window => move |_, _| {
+                    let signal = err_dialog.connect_response(None, clone!(#[weak] window, move |_, _| {
                         // Re-enable parent
                         window.set_sensitive(true);
                     }));
@@ -108,7 +108,7 @@ pub fn create(app: &Application, model: &Model) -> ApplicationWindow {
                         d.block_signal(&signal);
                     });
 
-                    err_dialog.present(&window);
+                    err_dialog.present(Some(&window));
                 }
                 else {
                     // Re-enable parent window
@@ -121,7 +121,7 @@ pub fn create(app: &Application, model: &Model) -> ApplicationWindow {
     // Init advanced options button
     let advanced_button = builder.object::<Button>("AdvancedOptions").unwrap();
 
-    advanced_button.connect_clicked(clone!(@weak window => move |_| {
+    advanced_button.connect_clicked(clone!(#[weak] window, move |_| {
         // Disable main window
         window.set_sensitive(false);
 
@@ -129,7 +129,7 @@ pub fn create(app: &Application, model: &Model) -> ApplicationWindow {
         let advanced_window = advanced_window::create(&window);
 
         // Re-enable main window on close
-        advanced_window.connect_destroy(clone!(@weak window => move |_| {
+        advanced_window.connect_destroy(clone!(#[weak] window, move |_| {
             window.set_sensitive(true);
         }));
 
@@ -153,7 +153,7 @@ pub fn create(app: &Application, model: &Model) -> ApplicationWindow {
                 dialog.emit_by_name::<()>("response", &[&dialog.close_response()]);
             });
 
-            let signal = warning_dialog.connect_response(None, clone!(@weak advanced_window => move |_, _| {
+            let signal = warning_dialog.connect_response(None, clone!(#[weak] advanced_window, move |_, _| {
                 // Show advanced window
                 advanced_window.present();
             }));
@@ -163,7 +163,7 @@ pub fn create(app: &Application, model: &Model) -> ApplicationWindow {
                 d.block_signal(&signal);
             });
 
-            warning_dialog.present(&window);
+            warning_dialog.present(Some(&window));
         }
         else {
             // Show advanced window
@@ -182,7 +182,7 @@ pub fn create(app: &Application, model: &Model) -> ApplicationWindow {
     // Init enable/disable all checkbox
     let enable_all_checkbox = builder.object::<CheckButton>("EnableAllCheckBox").unwrap();
 
-    enable_all_checkbox.connect_toggled(clone!(@weak model => move |checkbox| {
+    enable_all_checkbox.connect_toggled(clone!(#[weak] model, move |checkbox| {
         model.toggle_all(checkbox.is_active());
     }));
 
@@ -352,14 +352,14 @@ pub fn get_game_path(parent_window: &ApplicationWindow, files: &[GioFile], model
         dialog.emit_by_name::<()>("response", &[&dialog.close_response()]);
     });
 
-    let signal = dialog.connect_response(None, clone!(@weak parent_window, @weak model => move |_, _| {
+    let signal = dialog.connect_response(None, clone!(#[weak] parent_window, #[weak] model, move |_, _| {
         // Create file dialog to select folder
         let file_dialog = FileDialog::builder()
             .accept_label("Open")
             .title("Open the game directory")
             .build();
 
-        file_dialog.select_folder(Some(&parent_window), None::<&Cancellable>, clone!(@strong file_dialog, @weak parent_window, @weak model => move |result| {
+        file_dialog.select_folder(Some(&parent_window), None::<&Cancellable>, clone!(#[weak] parent_window, #[weak] model, move |result| {
             // Set game path
             if let Ok(file) = result {
                 let path = file.path().unwrap();
@@ -394,7 +394,7 @@ pub fn get_game_path(parent_window: &ApplicationWindow, files: &[GioFile], model
                     dialog.emit_by_name::<()>("response", &[&dialog.close_response()]);
                 });
 
-                let signal = err_dialog.connect_response(None, clone!(@weak parent_window => move |_, _| {
+                let signal = err_dialog.connect_response(None, clone!(#[weak] parent_window, move |_, _| {
                     // Exit
                     parent_window.close();
                 }));
@@ -404,7 +404,7 @@ pub fn get_game_path(parent_window: &ApplicationWindow, files: &[GioFile], model
                     d.block_signal(&signal);
                 });
 
-                err_dialog.present(&parent_window);
+                err_dialog.present(Some(&parent_window));
             }
             else {
                 // Re-enable parent window
@@ -418,7 +418,7 @@ pub fn get_game_path(parent_window: &ApplicationWindow, files: &[GioFile], model
         d.block_signal(&signal);
     });
 
-    dialog.present(parent_window);
+    dialog.present(Some(parent_window));
 }
 
 // Save game path to config file
@@ -490,7 +490,7 @@ fn check_modding_tools(parent_window: &ApplicationWindow) {
 
         let signal = err_dialog.connect_response(
             None,
-            clone!(@weak parent_window => move |_, _| {
+            clone!(#[weak] parent_window, move |_, _| {
                 // Exit
                 parent_window.close();
             })
@@ -501,7 +501,7 @@ fn check_modding_tools(parent_window: &ApplicationWindow) {
             d.block_signal(&signal);
         });
 
-        err_dialog.present(parent_window);
+        err_dialog.present(Some(parent_window));
     }
 }
 
@@ -538,7 +538,7 @@ fn check_modding_tools(parent_window: &ApplicationWindow) {
             dialog.emit_by_name::<()>("response", &[&dialog.close_response()]);
         });
 
-        let signal = dialog.connect_response(None, clone!(@weak parent_window => move |_, result| {
+        let signal = dialog.connect_response(None, clone!(#[weak] parent_window, move |_, result| {
             // Check user selection
             if result == "no" {
                 // Exit
@@ -549,7 +549,7 @@ fn check_modding_tools(parent_window: &ApplicationWindow) {
             // Download modding tools
             let main_context = MainContext::default();
 
-            main_context.spawn_local(clone!(@weak parent_window => async move {
+            main_context.spawn_local(clone!(#[weak] parent_window, async move {
                 // Get request
                 let bytes = reqwest::blocking::get(
                     "https://github.com/leveste/EternalBasher/releases/latest/download/EternalModInjectorShell.zip"
@@ -572,7 +572,7 @@ fn check_modding_tools(parent_window: &ApplicationWindow) {
                         dialog.emit_by_name::<()>("response", &[&dialog.close_response()]);
                     });
 
-                    let signal = err_dialog.connect_response(None, clone!(@weak parent_window => move |_, _| {
+                    let signal = err_dialog.connect_response(None, clone!(#[weak] parent_window, move |_, _| {
                         // Exit
                         parent_window.close();
                     }));
@@ -582,7 +582,7 @@ fn check_modding_tools(parent_window: &ApplicationWindow) {
                         d.block_signal(&signal);
                     });
 
-                    err_dialog.present(&parent_window);
+                    err_dialog.present(Some(&parent_window));
 
                     return;
                 }
@@ -606,7 +606,7 @@ fn check_modding_tools(parent_window: &ApplicationWindow) {
                         dialog.emit_by_name::<()>("response", &[&dialog.close_response()]);
                     });
 
-                    let signal = err_dialog.connect_response(None, clone!(@weak parent_window => move |_, _| {
+                    let signal = err_dialog.connect_response(None, clone!(#[weak] parent_window, move |_, _| {
                         // Exit
                         parent_window.close();
                     }));
@@ -616,7 +616,7 @@ fn check_modding_tools(parent_window: &ApplicationWindow) {
                         d.block_signal(&signal);
                     });
 
-                    err_dialog.present(&parent_window);
+                    err_dialog.present(Some(&parent_window));
 
                     return;
                 }
@@ -631,13 +631,13 @@ fn check_modding_tools(parent_window: &ApplicationWindow) {
             d.block_signal(&signal);
         });
 
-        dialog.present(parent_window);
+        dialog.present(Some(parent_window));
     }
 }
 
 // Initialize the watcher on the game and mod directories
 fn init_watcher(model: &Model) {
-    thread::spawn(clone!(@weak model => move || {
+    thread::spawn(clone!(#[weak] model, move || {
         let (tx, rx) = mpsc::channel();
 
         // Create the mod directories
@@ -663,14 +663,14 @@ fn init_watcher(model: &Model) {
         // Get mods
         let main_context = MainContext::default();
 
-        main_context.spawn(clone!(@weak model => async move {
+        main_context.spawn(clone!(#[weak] model, async move {
             get_mods(&model);
         }));
 
         // Listen to watcher
         for res in rx {
             if res.is_ok() {
-                main_context.spawn(clone!(@weak model => async move {
+                main_context.spawn(clone!(#[weak] model, async move {
                     get_mods(&model);
                 }));
             }

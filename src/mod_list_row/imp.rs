@@ -48,7 +48,7 @@ impl ObjectImpl for ListBoxRow {
         // Create action "install" to install mods
         let action_install = SimpleAction::new("install", None);
 
-        action_install.connect_activate(clone!(@weak item => move |_, _| {
+        action_install.connect_activate(|_, _| {
             // Add zip filter
             let zip_filter = FileFilter::new();
             zip_filter.add_suffix("zip");
@@ -88,12 +88,12 @@ impl ObjectImpl for ListBoxRow {
                     }
                 }
             });
-        }));
+        });
 
         // Create action "open" to open mod folder
         let action_open = SimpleAction::new("open", None);
 
-        action_open.connect_activate(clone!(@weak item => move |_, _| {
+        action_open.connect_activate(clone!(#[weak] item, move |_, _| {
             // Get mod folder
             let parent_folder = match item.is_enabled() {
                 true => crate::GAME_PATH.get().unwrap().join("Mods"),
@@ -107,7 +107,7 @@ impl ObjectImpl for ListBoxRow {
         // Create action "toggle" to toggle mod
         let action_toggle = SimpleAction::new("toggle", None);
 
-        action_toggle.connect_activate(clone!(@weak item => move |_, _| {
+        action_toggle.connect_activate(clone!(#[weak] item, move |_, _| {
             // Toggle mod
             item.set_is_enabled(!item.is_enabled());
         }));
@@ -115,7 +115,7 @@ impl ObjectImpl for ListBoxRow {
         // Create action "delete" to delete mod
         let action_delete = SimpleAction::new("delete", None);
 
-        action_delete.connect_activate(clone!(@weak item => move |_, _| {
+        action_delete.connect_activate(clone!(#[weak] item, move |_, _| {
             // Get mod folder
             let parent_folder = match item.is_enabled() {
                 true => crate::GAME_PATH.get().unwrap().join("Mods"),

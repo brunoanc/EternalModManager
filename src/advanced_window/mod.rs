@@ -96,7 +96,7 @@ pub fn create(parent_window: &ApplicationWindow) -> ApplicationWindow {
     // Init restore backups button
     let restore_backups_button = builder.object::<Button>("RestoreBackups").unwrap();
 
-    restore_backups_button.connect_clicked(clone!(@weak window => move |button| {
+    restore_backups_button.connect_clicked(clone!(#[weak] window, move |button| {
         let confirmation_dialog = AlertDialog::builder()
             .heading("Are you sure?")
             .body(concat!(
@@ -116,7 +116,7 @@ pub fn create(parent_window: &ApplicationWindow) -> ApplicationWindow {
             dialog.emit_by_name::<()>("response", &[&dialog.close_response()]);
         });
 
-        let signal = confirmation_dialog.connect_response(None, clone!(@weak window, @weak button => move |_, result| {
+        let signal = confirmation_dialog.connect_response(None, clone!(#[weak] window, #[weak] button, move |_, result| {
             // Check user selection
             if result == "no" {
                 return;
@@ -145,7 +145,7 @@ pub fn create(parent_window: &ApplicationWindow) -> ApplicationWindow {
                 tx.send(backups_restored).unwrap();
             });
 
-            MainContext::default().spawn_local(clone!(@weak window => async move {
+            MainContext::default().spawn_local(clone!(#[weak] window, async move {
                 if let Ok(backups_restored) = rx.recv() {
                     // Restore label
                     button.set_label("Restore backups");
@@ -165,7 +165,7 @@ pub fn create(parent_window: &ApplicationWindow) -> ApplicationWindow {
                         dialog.emit_by_name::<()>("response", &[&dialog.close_response()]);
                     });
 
-                    let signal = dialog.connect_response(None, clone!(@weak window => move |_, _| {
+                    let signal = dialog.connect_response(None, clone!(#[weak] window, move |_, _| {
                         // Re-enable parent window
                         window.set_sensitive(true);
                     }));
@@ -175,7 +175,7 @@ pub fn create(parent_window: &ApplicationWindow) -> ApplicationWindow {
                         d.block_signal(&signal);
                     });
 
-                    dialog.present(&window);
+                    dialog.present(Some(&window));
                 }
             }));
         }));
@@ -185,13 +185,13 @@ pub fn create(parent_window: &ApplicationWindow) -> ApplicationWindow {
             d.block_signal(&signal);
         });
 
-        confirmation_dialog.present(&window);
+        confirmation_dialog.present(Some(&window));
     }));
 
     // Init reset backups button
     let reset_backups_button = builder.object::<Button>("ResetBackups").unwrap();
 
-    reset_backups_button.connect_clicked(clone!(@weak window => move |button| {
+    reset_backups_button.connect_clicked(clone!(#[weak] window, move |button| {
         // Create confirmation prompt
         let confirmation_dialog = AlertDialog::builder()
             .heading("Are you sure?")
@@ -212,7 +212,7 @@ pub fn create(parent_window: &ApplicationWindow) -> ApplicationWindow {
             dialog.emit_by_name::<()>("response", &[&dialog.close_response()]);
         });
 
-        let signal = confirmation_dialog.connect_response(None, clone!(@weak window, @weak button => move |_, result| {
+        let signal = confirmation_dialog.connect_response(None, clone!(#[weak] window, #[weak] button, move |_, result| {
             // Check user selection
             if result == "no" {
                 return;
@@ -241,7 +241,7 @@ pub fn create(parent_window: &ApplicationWindow) -> ApplicationWindow {
                 tx.send(backups_deleted).unwrap();
             });
 
-            MainContext::default().spawn_local(clone!(@weak window => async move {
+            MainContext::default().spawn_local(clone!(#[weak] window, async move {
                 if let Ok(backups_deleted) = rx.recv() {
                     // Restore label
                     button.set_label("Reset backups");
@@ -261,7 +261,7 @@ pub fn create(parent_window: &ApplicationWindow) -> ApplicationWindow {
                         dialog.emit_by_name::<()>("response", &[&dialog.close_response()]);
                     });
 
-                    let signal = dialog.connect_response(None, clone!(@weak window => move |_, _| {
+                    let signal = dialog.connect_response(None, clone!(#[weak] window, move |_, _| {
                         // Re-enable parent window
                         window.set_sensitive(true);
                     }));
@@ -271,7 +271,7 @@ pub fn create(parent_window: &ApplicationWindow) -> ApplicationWindow {
                         d.block_signal(&signal);
                     });
 
-                    dialog.present(&window);
+                    dialog.present(Some(&window));
                 }
             }));
         }));
@@ -281,13 +281,13 @@ pub fn create(parent_window: &ApplicationWindow) -> ApplicationWindow {
             d.block_signal(&signal);
         });
 
-        confirmation_dialog.present(&window);
+        confirmation_dialog.present(Some(&window));
     }));
 
     // Init copy template JSON button
     let copy_template_button = builder.object::<Button>("CopyTemplate").unwrap();
 
-    copy_template_button.connect_clicked(clone!(@weak window => move |_| {
+    copy_template_button.connect_clicked(clone!(#[weak] window, move |_| {
         // Copy template to clipboard
         let _ = Clipboard::new().unwrap().set_text(
             "{\n\t\"name\": \"\",\n\t\"author\": \"\",\n\t\"description\": \"\",\n\t\"version\": \"\",\n\t\"loadPriority\": 0,\n\t\"requiredVersion\": 20\n}"
@@ -311,7 +311,7 @@ pub fn create(parent_window: &ApplicationWindow) -> ApplicationWindow {
             dialog.emit_by_name::<()>("response", &[&dialog.close_response()]);
         });
 
-        let signal = dialog.connect_response(None, clone!(@weak window => move |_, _| {
+        let signal = dialog.connect_response(None, clone!(#[weak] window, move |_, _| {
             // Re-enable parent window
             window.set_sensitive(true);
         }));
@@ -321,13 +321,13 @@ pub fn create(parent_window: &ApplicationWindow) -> ApplicationWindow {
             d.block_signal(&signal);
         });
 
-        dialog.present(&window);
+        dialog.present(Some(&window));
     }));
 
     // Init save injector settings button
     let save_settings_button = builder.object::<Button>("SaveSettings").unwrap();
 
-    save_settings_button.connect_clicked(clone!(@weak window => move |_| {
+    save_settings_button.connect_clicked(clone!(#[weak] window, move |_| {
         // Disable parent window
         window.set_sensitive(false);
 
@@ -353,7 +353,7 @@ pub fn create(parent_window: &ApplicationWindow) -> ApplicationWindow {
             dialog.emit_by_name::<()>("response", &[&dialog.close_response()]);
         });
 
-        let signal = dialog.connect_response(None, clone!(@weak window => move |_, _| {
+        let signal = dialog.connect_response(None, clone!(#[weak] window, move |_, _| {
             // Re-enable parent window
             window.set_sensitive(true);
         }));
@@ -363,7 +363,7 @@ pub fn create(parent_window: &ApplicationWindow) -> ApplicationWindow {
             d.block_signal(&signal);
         });
 
-        dialog.present(&window);
+        dialog.present(Some(&window));
     }));
 
     window
