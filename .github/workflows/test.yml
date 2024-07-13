@@ -122,7 +122,7 @@ jobs:
         with:
           msystem: UCRT64
           update: true
-          install: base-devel mingw-w64-ucrt-x86_64-toolchain mingw-w64-ucrt-x86_64-gtk4 mingw-w64-ucrt-x86_64-libadwaita mingw-w64-ucrt-x86_64-cmake zip
+          install: base-devel git zip mingw-w64-ucrt-x86_64-toolchain mingw-w64-ucrt-x86_64-gtk4 mingw-w64-ucrt-x86_64-libadwaita mingw-w64-ucrt-x86_64-cmake
 
       - name: Install Rust toolchain
         run: |
