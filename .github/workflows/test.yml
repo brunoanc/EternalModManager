@@ -154,7 +154,7 @@ jobs:
           export PATH=$PATH:`cygpath $USERPROFILE/.cargo/bin`:`cygpath ./pe-util/build`
           mkdir -p package
           cd package
-          cp target/x86_64-pc-windows-gnu/release/eternal_mod_manager.exe EternalModManager.exe
+          cp ../target/x86_64-pc-windows-gnu/release/eternal_mod_manager.exe EternalModManager.exe
           cp $MINGW_PREFIX/bin/gdbus.exe .
           cp $MINGW_PREFIX/bin/gspawn-win64-helper-console.exe $MINGW_PREFIX/bin/gspawn-win64-helper.exe .
           glib-compile-schemas $MINGW_PREFIX/share/glib-2.0/schemas/
