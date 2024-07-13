@@ -91,14 +91,10 @@ jobs:
           update: true
           install: base-devel mingw-w64-ucrt-x86_64-toolchain mingw-w64-ucrt-x86_64-gtk4 mingw-w64-ucrt-x86_64-libadwaita
 
-      - name: Setup Rust
-        run: |
-          echo `cygpath $USERPROFILE/.cargo/bin` >> $GITHUB_PATH
-          export PATH=$PATH:`cygpath $USERPROFILE/.cargo/bin`
-          rustup default stable-x86_64-pc-windows-gnu
-
       - name: Compile
         run: |
+          export PATH=$PATH:`cygpath $USERPROFILE/.cargo/bin`
+          rustup default stable-x86_64-pc-windows-gnu
           cargo build --target=x86_64-pc-windows-gnu --locked
           cargo build --target=x86_64-pc-windows-gnu --release --locked
 
