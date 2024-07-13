@@ -7,13 +7,13 @@ use std::{
     time::Duration
 };
 
-use adw::{prelude::*, Application, AlertDialog};
+use adw::{prelude::*, AlertDialog, Application};
 use gtk::{
     gdk::{Display, DragAction, FileList, Monitor},
-    gio::{File as GioFile, Cancellable},
+    gio::{Cancellable, File as GioFile},
     glib::{self, clone, KeyFile, KeyFileFlags, MainContext},
-    ApplicationWindow, Builder, Button, CheckButton, DropTarget,
-    FileDialog, Label, ListBox, ScrolledWindow, Widget
+    ApplicationWindow, Builder, Button, CheckButton, DropTarget, FileDialog, Label, ListBox, ScrolledWindow,
+    Widget
 };
 use im::Vector;
 use notify::RecursiveMode;
@@ -488,10 +488,13 @@ fn check_modding_tools(parent_window: &ApplicationWindow) {
             dialog.emit_by_name::<()>("response", &[&dialog.close_response()]);
         });
 
-        let signal = err_dialog.connect_response(None, clone!(@weak parent_window => move |_, _| {
-            // Exit
-            parent_window.close();
-        }));
+        let signal = err_dialog.connect_response(
+            None,
+            clone!(@weak parent_window => move |_, _| {
+                // Exit
+                parent_window.close();
+            })
+        );
 
         // WORKAROUND: AlertDialog's close response doesn't work
         err_dialog.connect_response(None, move |d, _| {
@@ -506,6 +509,7 @@ fn check_modding_tools(parent_window: &ApplicationWindow) {
 // Check for the modding tools on Linux (and download them)
 fn check_modding_tools(parent_window: &ApplicationWindow) {
     use std::io::Cursor;
+
     use adw::ResponseAppearance;
 
     // Check if injector batch is present

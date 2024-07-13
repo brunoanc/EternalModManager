@@ -3,10 +3,10 @@ use std::{cell::RefCell, fs, path::Path, thread};
 use adw::{prelude::*, subclass::prelude::*};
 use gtk::{
     gdk::{self, Rectangle},
-    gio::{File as GioFile, MenuModel, SimpleAction, SimpleActionGroup, Cancellable, ListStore},
+    gio::{Cancellable, File as GioFile, ListStore, MenuModel, SimpleAction, SimpleActionGroup},
     glib::{self, clone, ParamSpec, Properties, Value},
-    Builder, CheckButton, EventSequenceState, FileDialog, FileFilter, GestureClick,
-    Grid, Label, PopoverMenu, Window
+    Builder, CheckButton, EventSequenceState, FileDialog, FileFilter, GestureClick, Grid, Label, PopoverMenu,
+    Window
 };
 
 use crate::mod_data::ModData;

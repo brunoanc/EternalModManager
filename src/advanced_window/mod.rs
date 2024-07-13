@@ -2,8 +2,8 @@ use std::{
     collections::HashMap,
     fs::{self, File},
     io::{BufRead, BufReader},
-    sync::mpsc,
     path::PathBuf,
+    sync::mpsc,
     thread
 };
 
@@ -11,7 +11,7 @@ use adw::{prelude::*, AlertDialog, ResponseAppearance};
 use arboard::Clipboard;
 use gtk::{
     glib::{self, clone, MainContext},
-    ApplicationWindow, Box, Builder, Button, CheckButton, Entry,
+    ApplicationWindow, Box, Builder, Button, CheckButton, Entry
 };
 use walkdir::WalkDir;
 
