@@ -76,3 +76,39 @@ jobs:
         with:
           name: windows-release
           path: ${{ github.workspace }}/target/x86_64-pc-windows-gnu/release/eternal_mod_manager.exe
+
+  msys2-ucrt64:
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: base-devel mingw-w64-ucrt-x86_64-toolchain mingw-w64-ucrt-x86_64-gtk4 mingw-w64-ucrt-x86_64-libadwaita
+
+      - name: Setup Rust
+        run: |
+          export PATH=$PATH:`cygpath $USERPROFILE/.cargo/bin`
+          rustup default stable-x86_64-pc-windows-gnu
+
+      - name: Compile
+        run: |
+          cargo build --target=x86_64-pc-windows-gnu --locked
+          cargo build --target=x86_64-pc-windows-gnu --release --locked
+
+      - name: Upload debug artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: msys-debug
+          path: ${{ github.workspace }}/target/x86_64-pc-windows-gnu/debug/eternal_mod_manager.exe
+
+      - name: Upload release artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: msys-release
+          path: ${{ github.workspace }}/target/x86_64-pc-windows-gnu/release/eternal_mod_manager.exe
