@@ -95,7 +95,7 @@ jobs:
       - name: Build with Docker image
         uses: addnab/docker-run-action@v3
         with:
-            image: powerball253/gtk4-cross:rust-gtk-4.12
+            image: powerball253/gtk4-cross:rust-gtk-4.14
             options: -v ${{ github.workspace }}:/mnt
             run: |
                 build
