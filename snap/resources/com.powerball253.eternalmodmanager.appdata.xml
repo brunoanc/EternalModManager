@@ -9,7 +9,7 @@
     <name>Bruno Ancona</name>
   </developer>
   <developer_name>Bruno Ancona</developer_name>
-  <summary>Cross platform mod manager for DOOM Eternal.</summary>
+  <summary>Mod manager for DOOM Eternal</summary>
   <metadata_license>CC0-1.0</metadata_license>
   <url type="homepage">https://github.com/brunoanc/EternalModManager</url>
   <url type="help">https://github.com/brunoanc/EternalModManager/issues</url>
@@ -18,6 +18,10 @@
   <description>
     <p>A cross platform mod manager for DOOM Eternal, making it easier to set-up and install mods in both Windows and Linux.</p>
   </description>
+  <branding>
+    <color type="primary" scheme_preference="light">#ed8383</color>
+    <color type="primary" scheme_preference="dark">#650606</color>
+  </branding>
   <screenshots>
     <screenshot type="default">
       <image type="source">https://github.com/brunoanc/EternalModManager/raw/main/screenshots/main_window.png</image>
