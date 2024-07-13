@@ -20,7 +20,7 @@ jobs:
 
     steps:
       - name: Clone repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install dependencies
         run: |
@@ -49,35 +49,6 @@ jobs:
           path: ${{ github.workspace }}/target/release/eternal_mod_manager
 
   windows-test:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Clone repo
-        uses: actions/checkout@v3
-
-      - name: Build with Docker image
-        uses: addnab/docker-run-action@v3
-        with:
-            image: powerball253/gtk4-cross:rust-gtk-4.14
-            options: -v ${{ github.workspace }}:/mnt
-            run: |
-                source "$HOME/.cargo/env"
-                cargo build --target=x86_64-pc-windows-gnu --locked
-                cargo build --target=x86_64-pc-windows-gnu --release --locked
-
-      - name: Upload debug artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: windows-debug
-          path: ${{ github.workspace }}/target/x86_64-pc-windows-gnu/debug/eternal_mod_manager.exe
-
-      - name: Upload release artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: windows-release
-          path: ${{ github.workspace }}/target/x86_64-pc-windows-gnu/release/eternal_mod_manager.exe
-
-  msys2-ucrt64:
     runs-on: windows-latest
     defaults:
       run:
@@ -109,67 +80,3 @@ jobs:
         with:
           name: msys-release
           path: ${{ github.workspace }}/target/x86_64-pc-windows-gnu/release/eternal_mod_manager.exe
-
-  msys2-ucrt64-release:
-    runs-on: windows-latest
-    defaults:
-      run:
-        shell: msys2 {0}
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: msys2/setup-msys2@v2
-        with:
-          msystem: UCRT64
-          update: true
-          install: base-devel git zip mingw-w64-ucrt-x86_64-toolchain mingw-w64-ucrt-x86_64-gtk4 mingw-w64-ucrt-x86_64-libadwaita mingw-w64-ucrt-x86_64-cmake
-
-      - name: Install Rust toolchain
-        run: |
-          export PATH=$PATH:`cygpath $USERPROFILE/.cargo/bin`
-          rustup default stable-x86_64-pc-windows-gnu
-
-      - name: Compile pe-util
-        run: |
-          git clone https://github.com/gsauthof/pe-util.git
-          cd pe-util
-          git submodule update --init
-          mkdir build
-          cd build
-          cmake .. -DCMAKE_BUILD_TYPE=Release
-          ninja -v
-
-      - name: Compile and install peldd_dependency_scanner
-        run: |
-          export PATH=$PATH:`cygpath $USERPROFILE/.cargo/bin`
-          cargo install --git https://github.com/brunoanc/peldd_dependency_scanner.git
-
-      - name: Compile executable
-        run: |
-          export PATH=$PATH:`cygpath $USERPROFILE/.cargo/bin`
-          cargo build --target=x86_64-pc-windows-gnu --release --locked
-
-      - name: Package executable
-        run: |
-          export PATH=$PATH:`cygpath $USERPROFILE/.cargo/bin`:`realpath ./pe-util/build`
-          mkdir -p package
-          cd package
-          cp ../target/x86_64-pc-windows-gnu/release/eternal_mod_manager.exe EternalModManager.exe
-          cp $MINGW_PREFIX/bin/gdbus.exe .
-          cp $MINGW_PREFIX/bin/gspawn-win64-helper-console.exe $MINGW_PREFIX/bin/gspawn-win64-helper.exe .
-          glib-compile-schemas $MINGW_PREFIX/share/glib-2.0/schemas/
-          mkdir -p share/glib-2.0/schemas/
-          cp -T $MINGW_PREFIX/share/glib-2.0/schemas/gschemas.compiled share/glib-2.0/schemas/gschemas.compiled
-          mkdir -p share/icons/hicolor
-          cp -T $MINGW_PREFIX/share/icons/hicolor/index.theme share/icons/hicolor/index.theme
-          mkdir -p lib/gdk-pixbuf-2.0
-          cp -rT $MINGW_PREFIX/lib/gdk-pixbuf-2.0 lib/gdk-pixbuf-2.0
-          cp -t . $(peldd_dependency_scanner -d $MINGW_PREFIX/bin -vv -f *.exe $MINGW_PREFIX/lib/gdk-pixbuf-2.0/2.10.0/loaders/*)
-          find . -iname "*.dll" -or -iname "*.exe" -type f -exec strip {} +
-          zip -r ../EternalModManager-${GITHUB_REF_NAME:1}-win64.zip *
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: msys-release-full
-          path: '${{ github.workspace }}/EternalModManager-*-win64.zip'
