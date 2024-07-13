@@ -7,7 +7,7 @@ use std::{
     time::Duration
 };
 
-use adw::{prelude::*, Application, AlertDialog, ResponseAppearance};
+use adw::{prelude::*, Application, AlertDialog};
 use gtk::{
     gdk::{Display, DragAction, FileList, Monitor},
     gio::{File as GioFile, Cancellable},
@@ -506,6 +506,7 @@ fn check_modding_tools(parent_window: &ApplicationWindow) {
 // Check for the modding tools on Linux (and download them)
 fn check_modding_tools(parent_window: &ApplicationWindow) {
     use std::io::Cursor;
+    use adw::ResponseAppearance;
 
     // Check if injector batch is present
     if !crate::GAME_PATH
