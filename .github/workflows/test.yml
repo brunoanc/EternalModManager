@@ -151,7 +151,7 @@ jobs:
 
       - name: Package executable
         run: |
-          export PATH=$PATH:`cygpath $USERPROFILE/.cargo/bin`:`cygpath ./pe-util/build`
+          export PATH=$PATH:`cygpath $USERPROFILE/.cargo/bin`:`realpath ./pe-util/build`
           mkdir -p package
           cd package
           cp ../target/x86_64-pc-windows-gnu/release/eternal_mod_manager.exe EternalModManager.exe
