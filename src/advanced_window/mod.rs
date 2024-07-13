@@ -96,275 +96,349 @@ pub fn create(parent_window: &ApplicationWindow) -> ApplicationWindow {
     // Init restore backups button
     let restore_backups_button = builder.object::<Button>("RestoreBackups").unwrap();
 
-    restore_backups_button.connect_clicked(clone!(#[weak] window, move |button| {
-        let confirmation_dialog = AlertDialog::builder()
-            .heading("Are you sure?")
-            .body(concat!(
-                "This will restore your game to vanilla state by restoring the unmodded backed up game files.\n",
-                "This process might take a while depending on the speed of your disk, so please be patient.\n",
-                "Are you sure you want to continue?"
-            ))
-            .default_response("no")
-            .close_response("no")
-            .build();
+    restore_backups_button.connect_clicked(clone!(
+        #[weak]
+        window,
+        move |button| {
+            let confirmation_dialog = AlertDialog::builder()
+                .heading("Are you sure?")
+                .body(concat!(
+                    "This will restore your game to vanilla state by restoring the unmodded backed up game \
+                     files.\n",
+                    "This process might take a while depending on the speed of your disk, so please be \
+                     patient.\n",
+                    "Are you sure you want to continue?"
+                ))
+                .default_response("no")
+                .close_response("no")
+                .build();
 
-        confirmation_dialog.add_responses(&[("yes", "_Yes"), ("no", "_No")]);
-        confirmation_dialog.set_response_appearance("yes", ResponseAppearance::Destructive);
+            confirmation_dialog.add_responses(&[("yes", "_Yes"), ("no", "_No")]);
+            confirmation_dialog.set_response_appearance("yes", ResponseAppearance::Destructive);
 
-        // WORKAROUND: AlertDialog's close response doesn't work
-        confirmation_dialog.connect_destroy(|dialog| {
-            dialog.emit_by_name::<()>("response", &[&dialog.close_response()]);
-        });
-
-        let signal = confirmation_dialog.connect_response(None, clone!(#[weak] window, #[weak] button, move |_, result| {
-            // Check user selection
-            if result == "no" {
-                return;
-            }
-
-            // Disable parent window
-            window.set_sensitive(false);
-
-            // Set button label to indicate backups are being restored
-            button.set_label("Restoring backups...");
-
-            let (tx, rx) = mpsc::channel();
-
-            // Get backups
-            thread::spawn(move || {
-                // Backup restored counter
-                let mut backups_restored = 0_usize;
-
-                for backup in get_backups() {
-                    // Restore backup
-                    if fs::copy(&backup, &backup.with_extension("")).is_ok() {
-                        backups_restored += 1;
-                    }
-                }
-
-                tx.send(backups_restored).unwrap();
+            // WORKAROUND: AlertDialog's close response doesn't work
+            confirmation_dialog.connect_destroy(|dialog| {
+                dialog.emit_by_name::<()>("response", &[&dialog.close_response()]);
             });
 
-            MainContext::default().spawn_local(clone!(#[weak] window, async move {
-                if let Ok(backups_restored) = rx.recv() {
-                    // Restore label
-                    button.set_label("Restore backups");
+            let signal = confirmation_dialog.connect_response(
+                None,
+                clone!(
+                    #[weak]
+                    window,
+                    #[weak]
+                    button,
+                    move |_, result| {
+                        // Check user selection
+                        if result == "no" {
+                            return;
+                        }
 
-                    // Create end prompt
-                    let dialog = AlertDialog::builder()
-                        .heading("Done.")
-                        .body(format!("{} backups were restored.", backups_restored))
-                        .default_response("ok")
-                        .close_response("ok")
-                        .build();
+                        // Disable parent window
+                        window.set_sensitive(false);
 
-                    dialog.add_responses(&[("ok", "_Ok")]);
+                        // Set button label to indicate backups are being restored
+                        button.set_label("Restoring backups...");
 
-                    // WORKAROUND: AlertDialog's close response doesn't work
-                    dialog.connect_destroy(|dialog| {
-                        dialog.emit_by_name::<()>("response", &[&dialog.close_response()]);
-                    });
+                        let (tx, rx) = mpsc::channel();
 
-                    let signal = dialog.connect_response(None, clone!(#[weak] window, move |_, _| {
-                        // Re-enable parent window
-                        window.set_sensitive(true);
-                    }));
+                        // Get backups
+                        thread::spawn(move || {
+                            // Backup restored counter
+                            let mut backups_restored = 0_usize;
 
-                    // WORKAROUND: AlertDialog's close response doesn't work
-                    dialog.connect_response(None, move |d, _| {
-                        d.block_signal(&signal);
-                    });
+                            for backup in get_backups() {
+                                // Restore backup
+                                if fs::copy(&backup, &backup.with_extension("")).is_ok() {
+                                    backups_restored += 1;
+                                }
+                            }
 
-                    dialog.present(Some(&window));
-                }
-            }));
-        }));
+                            tx.send(backups_restored).unwrap();
+                        });
 
-        // WORKAROUND: AlertDialog's close response doesn't work
-        confirmation_dialog.connect_response(None, move |d, _| {
-            d.block_signal(&signal);
-        });
+                        MainContext::default().spawn_local(clone!(
+                            #[weak]
+                            window,
+                            async move {
+                                if let Ok(backups_restored) = rx.recv() {
+                                    // Restore label
+                                    button.set_label("Restore backups");
 
-        confirmation_dialog.present(Some(&window));
-    }));
+                                    // Create end prompt
+                                    let dialog = AlertDialog::builder()
+                                        .heading("Done.")
+                                        .body(format!("{} backups were restored.", backups_restored))
+                                        .default_response("ok")
+                                        .close_response("ok")
+                                        .build();
+
+                                    dialog.add_responses(&[("ok", "_Ok")]);
+
+                                    // WORKAROUND: AlertDialog's close response doesn't work
+                                    dialog.connect_destroy(|dialog| {
+                                        dialog.emit_by_name::<()>("response", &[&dialog.close_response()]);
+                                    });
+
+                                    let signal = dialog.connect_response(
+                                        None,
+                                        clone!(
+                                            #[weak]
+                                            window,
+                                            move |_, _| {
+                                                // Re-enable parent window
+                                                window.set_sensitive(true);
+                                            }
+                                        )
+                                    );
+
+                                    // WORKAROUND: AlertDialog's close response doesn't work
+                                    dialog.connect_response(None, move |d, _| {
+                                        d.block_signal(&signal);
+                                    });
+
+                                    dialog.present(Some(&window));
+                                }
+                            }
+                        ));
+                    }
+                )
+            );
+
+            // WORKAROUND: AlertDialog's close response doesn't work
+            confirmation_dialog.connect_response(None, move |d, _| {
+                d.block_signal(&signal);
+            });
+
+            confirmation_dialog.present(Some(&window));
+        }
+    ));
 
     // Init reset backups button
     let reset_backups_button = builder.object::<Button>("ResetBackups").unwrap();
 
-    reset_backups_button.connect_clicked(clone!(#[weak] window, move |button| {
-        // Create confirmation prompt
-        let confirmation_dialog = AlertDialog::builder()
-            .heading("Are you sure?")
-            .body(concat!(
-                "This will delete your backed up game files.\n",
-                "The next time mods are injected the backups will be re-created, so make sure to verify your game files after doing this.\n",
-                "Are you sure you want to continue?"
-            ))
-            .default_response("no")
-            .close_response("no")
-            .build();
+    reset_backups_button.connect_clicked(clone!(
+        #[weak]
+        window,
+        move |button| {
+            // Create confirmation prompt
+            let confirmation_dialog = AlertDialog::builder()
+                .heading("Are you sure?")
+                .body(concat!(
+                    "This will delete your backed up game files.\n",
+                    "The next time mods are injected the backups will be re-created, so make sure to verify \
+                     your game files after doing this.\n",
+                    "Are you sure you want to continue?"
+                ))
+                .default_response("no")
+                .close_response("no")
+                .build();
 
-        confirmation_dialog.add_responses(&[("yes", "_Yes"), ("no", "_No")]);
-        confirmation_dialog.set_response_appearance("yes", ResponseAppearance::Destructive);
+            confirmation_dialog.add_responses(&[("yes", "_Yes"), ("no", "_No")]);
+            confirmation_dialog.set_response_appearance("yes", ResponseAppearance::Destructive);
 
-        // WORKAROUND: AlertDialog's close response doesn't work
-        confirmation_dialog.connect_destroy(|dialog| {
-            dialog.emit_by_name::<()>("response", &[&dialog.close_response()]);
-        });
-
-        let signal = confirmation_dialog.connect_response(None, clone!(#[weak] window, #[weak] button, move |_, result| {
-            // Check user selection
-            if result == "no" {
-                return;
-            }
-
-            // Disable parent window
-            window.set_sensitive(false);
-
-            // Set button label to indicate backups are being reset
-            button.set_label("Resetting backups...");
-
-            let (tx, rx) = mpsc::channel();
-
-            // Get backups
-            thread::spawn(move || {
-                // Backup deleted counter
-                let mut backups_deleted = 0_usize;
-
-                for backup in get_backups() {
-                    // Delete backup
-                    if fs::remove_file(&backup).is_ok() {
-                        backups_deleted += 1;
-                    }
-                }
-
-                tx.send(backups_deleted).unwrap();
+            // WORKAROUND: AlertDialog's close response doesn't work
+            confirmation_dialog.connect_destroy(|dialog| {
+                dialog.emit_by_name::<()>("response", &[&dialog.close_response()]);
             });
 
-            MainContext::default().spawn_local(clone!(#[weak] window, async move {
-                if let Ok(backups_deleted) = rx.recv() {
-                    // Restore label
-                    button.set_label("Reset backups");
+            let signal = confirmation_dialog.connect_response(
+                None,
+                clone!(
+                    #[weak]
+                    window,
+                    #[weak]
+                    button,
+                    move |_, result| {
+                        // Check user selection
+                        if result == "no" {
+                            return;
+                        }
 
-                    // Create end prompt
-                    let dialog = AlertDialog::builder()
-                        .heading("Done.")
-                        .body(format!("{} backups were deleted.", backups_deleted))
-                        .default_response("ok")
-                        .close_response("ok")
-                        .build();
+                        // Disable parent window
+                        window.set_sensitive(false);
 
-                    dialog.add_responses(&[("ok", "_Ok")]);
+                        // Set button label to indicate backups are being reset
+                        button.set_label("Resetting backups...");
 
-                    // WORKAROUND: AlertDialog's close response doesn't work
-                    dialog.connect_destroy(|dialog| {
-                        dialog.emit_by_name::<()>("response", &[&dialog.close_response()]);
-                    });
+                        let (tx, rx) = mpsc::channel();
 
-                    let signal = dialog.connect_response(None, clone!(#[weak] window, move |_, _| {
-                        // Re-enable parent window
-                        window.set_sensitive(true);
-                    }));
+                        // Get backups
+                        thread::spawn(move || {
+                            // Backup deleted counter
+                            let mut backups_deleted = 0_usize;
 
-                    // WORKAROUND: AlertDialog's close response doesn't work
-                    dialog.connect_response(None, move |d, _| {
-                        d.block_signal(&signal);
-                    });
+                            for backup in get_backups() {
+                                // Delete backup
+                                if fs::remove_file(&backup).is_ok() {
+                                    backups_deleted += 1;
+                                }
+                            }
 
-                    dialog.present(Some(&window));
-                }
-            }));
-        }));
+                            tx.send(backups_deleted).unwrap();
+                        });
 
-        // WORKAROUND: AlertDialog's close response doesn't work
-        confirmation_dialog.connect_response(None, move |d, _| {
-            d.block_signal(&signal);
-        });
+                        MainContext::default().spawn_local(clone!(
+                            #[weak]
+                            window,
+                            async move {
+                                if let Ok(backups_deleted) = rx.recv() {
+                                    // Restore label
+                                    button.set_label("Reset backups");
 
-        confirmation_dialog.present(Some(&window));
-    }));
+                                    // Create end prompt
+                                    let dialog = AlertDialog::builder()
+                                        .heading("Done.")
+                                        .body(format!("{} backups were deleted.", backups_deleted))
+                                        .default_response("ok")
+                                        .close_response("ok")
+                                        .build();
+
+                                    dialog.add_responses(&[("ok", "_Ok")]);
+
+                                    // WORKAROUND: AlertDialog's close response doesn't work
+                                    dialog.connect_destroy(|dialog| {
+                                        dialog.emit_by_name::<()>("response", &[&dialog.close_response()]);
+                                    });
+
+                                    let signal = dialog.connect_response(
+                                        None,
+                                        clone!(
+                                            #[weak]
+                                            window,
+                                            move |_, _| {
+                                                // Re-enable parent window
+                                                window.set_sensitive(true);
+                                            }
+                                        )
+                                    );
+
+                                    // WORKAROUND: AlertDialog's close response doesn't work
+                                    dialog.connect_response(None, move |d, _| {
+                                        d.block_signal(&signal);
+                                    });
+
+                                    dialog.present(Some(&window));
+                                }
+                            }
+                        ));
+                    }
+                )
+            );
+
+            // WORKAROUND: AlertDialog's close response doesn't work
+            confirmation_dialog.connect_response(None, move |d, _| {
+                d.block_signal(&signal);
+            });
+
+            confirmation_dialog.present(Some(&window));
+        }
+    ));
 
     // Init copy template JSON button
     let copy_template_button = builder.object::<Button>("CopyTemplate").unwrap();
 
-    copy_template_button.connect_clicked(clone!(#[weak] window, move |_| {
-        // Copy template to clipboard
-        let _ = Clipboard::new().unwrap().set_text(
-            "{\n\t\"name\": \"\",\n\t\"author\": \"\",\n\t\"description\": \"\",\n\t\"version\": \"\",\n\t\"loadPriority\": 0,\n\t\"requiredVersion\": 20\n}"
-        );
+    copy_template_button.connect_clicked(clone!(
+        #[weak]
+        window,
+        move |_| {
+            // Copy template to clipboard
+            let _ = Clipboard::new().unwrap().set_text(
+                "{\n\t\"name\": \"\",\n\t\"author\": \"\",\n\t\"description\": \"\",\n\t\"version\": \
+                 \"\",\n\t\"loadPriority\": 0,\n\t\"requiredVersion\": 20\n}"
+            );
 
-        // Disable parent window
-        window.set_sensitive(false);
+            // Disable parent window
+            window.set_sensitive(false);
 
-        // Create dialog
-        let dialog = AlertDialog::builder()
-            .heading("Done.")
-            .body("EternalMod.json template has been copied to your clipboard.")
-            .default_response("ok")
-            .close_response("ok")
-            .build();
+            // Create dialog
+            let dialog = AlertDialog::builder()
+                .heading("Done.")
+                .body("EternalMod.json template has been copied to your clipboard.")
+                .default_response("ok")
+                .close_response("ok")
+                .build();
 
-        dialog.add_responses(&[("ok", "_Ok")]);
+            dialog.add_responses(&[("ok", "_Ok")]);
 
-        // WORKAROUND: AlertDialog's close response doesn't work
-        dialog.connect_destroy(|dialog| {
-            dialog.emit_by_name::<()>("response", &[&dialog.close_response()]);
-        });
+            // WORKAROUND: AlertDialog's close response doesn't work
+            dialog.connect_destroy(|dialog| {
+                dialog.emit_by_name::<()>("response", &[&dialog.close_response()]);
+            });
 
-        let signal = dialog.connect_response(None, clone!(#[weak] window, move |_, _| {
-            // Re-enable parent window
-            window.set_sensitive(true);
-        }));
+            let signal = dialog.connect_response(
+                None,
+                clone!(
+                    #[weak]
+                    window,
+                    move |_, _| {
+                        // Re-enable parent window
+                        window.set_sensitive(true);
+                    }
+                )
+            );
 
-        // WORKAROUND: AlertDialog's close response doesn't work
-        dialog.connect_response(None, move |d, _| {
-            d.block_signal(&signal);
-        });
+            // WORKAROUND: AlertDialog's close response doesn't work
+            dialog.connect_response(None, move |d, _| {
+                d.block_signal(&signal);
+            });
 
-        dialog.present(Some(&window));
-    }));
+            dialog.present(Some(&window));
+        }
+    ));
 
     // Init save injector settings button
     let save_settings_button = builder.object::<Button>("SaveSettings").unwrap();
 
-    save_settings_button.connect_clicked(clone!(#[weak] window, move |_| {
-        // Disable parent window
-        window.set_sensitive(false);
+    save_settings_button.connect_clicked(clone!(
+        #[weak]
+        window,
+        move |_| {
+            // Disable parent window
+            window.set_sensitive(false);
 
-        // Save injector settings
-        let message = if save_injector_settings(&checkboxes, &text_entry) {
-            "Successfully saved the new settings."
+            // Save injector settings
+            let message = if save_injector_settings(&checkboxes, &text_entry) {
+                "Successfully saved the new settings."
+            }
+            else {
+                "An error happened trying to save the new settings."
+            };
+
+            // Create dialog
+            let dialog = AlertDialog::builder()
+                .heading(message)
+                .default_response("ok")
+                .close_response("ok")
+                .build();
+
+            dialog.add_responses(&[("ok", "_Ok")]);
+
+            // WORKAROUND: AlertDialog's close response doesn't work
+            dialog.connect_destroy(|dialog| {
+                dialog.emit_by_name::<()>("response", &[&dialog.close_response()]);
+            });
+
+            let signal = dialog.connect_response(
+                None,
+                clone!(
+                    #[weak]
+                    window,
+                    move |_, _| {
+                        // Re-enable parent window
+                        window.set_sensitive(true);
+                    }
+                )
+            );
+
+            // WORKAROUND: AlertDialog's close response doesn't work
+            dialog.connect_response(None, move |d, _| {
+                d.block_signal(&signal);
+            });
+
+            dialog.present(Some(&window));
         }
-        else {
-            "An error happened trying to save the new settings."
-        };
-
-        // Create dialog
-        let dialog = AlertDialog::builder()
-            .heading(message)
-            .default_response("ok")
-            .close_response("ok")
-            .build();
-
-        dialog.add_responses(&[("ok", "_Ok")]);
-
-        // WORKAROUND: AlertDialog's close response doesn't work
-        dialog.connect_destroy(|dialog| {
-            dialog.emit_by_name::<()>("response", &[&dialog.close_response()]);
-        });
-
-        let signal = dialog.connect_response(None, clone!(#[weak] window, move |_, _| {
-            // Re-enable parent window
-            window.set_sensitive(true);
-        }));
-
-        // WORKAROUND: AlertDialog's close response doesn't work
-        dialog.connect_response(None, move |d, _| {
-            d.block_signal(&signal);
-        });
-
-        dialog.present(Some(&window));
-    }));
+    ));
 
     window
 }

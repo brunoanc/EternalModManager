@@ -79,7 +79,9 @@ impl ObjectImpl for ListBoxRow {
                         let new_path = mods_folder.join(path.file_name().unwrap());
 
                         // Check if it's already in the target folder
-                        if path.parent().unwrap_or(Path::new("")).canonicalize().unwrap() == mods_folder.canonicalize().unwrap() {
+                        if path.parent().unwrap_or(Path::new("")).canonicalize().unwrap()
+                            == mods_folder.canonicalize().unwrap()
+                        {
                             continue;
                         }
 
@@ -93,41 +95,53 @@ impl ObjectImpl for ListBoxRow {
         // Create action "open" to open mod folder
         let action_open = SimpleAction::new("open", None);
 
-        action_open.connect_activate(clone!(#[weak] item, move |_, _| {
-            // Get mod folder
-            let parent_folder = match item.is_enabled() {
-                true => crate::GAME_PATH.get().unwrap().join("Mods"),
-                false => crate::GAME_PATH.get().unwrap().join("DisabledMods")
-            };
+        action_open.connect_activate(clone!(
+            #[weak]
+            item,
+            move |_, _| {
+                // Get mod folder
+                let parent_folder = match item.is_enabled() {
+                    true => crate::GAME_PATH.get().unwrap().join("Mods"),
+                    false => crate::GAME_PATH.get().unwrap().join("DisabledMods")
+                };
 
-            // Open folder
-            thread::spawn(|| open::that(parent_folder));
-        }));
+                // Open folder
+                thread::spawn(|| open::that(parent_folder));
+            }
+        ));
 
         // Create action "toggle" to toggle mod
         let action_toggle = SimpleAction::new("toggle", None);
 
-        action_toggle.connect_activate(clone!(#[weak] item, move |_, _| {
-            // Toggle mod
-            item.set_is_enabled(!item.is_enabled());
-        }));
+        action_toggle.connect_activate(clone!(
+            #[weak]
+            item,
+            move |_, _| {
+                // Toggle mod
+                item.set_is_enabled(!item.is_enabled());
+            }
+        ));
 
         // Create action "delete" to delete mod
         let action_delete = SimpleAction::new("delete", None);
 
-        action_delete.connect_activate(clone!(#[weak] item, move |_, _| {
-            // Get mod folder
-            let parent_folder = match item.is_enabled() {
-                true => crate::GAME_PATH.get().unwrap().join("Mods"),
-                false => crate::GAME_PATH.get().unwrap().join("DisabledMods")
-            };
+        action_delete.connect_activate(clone!(
+            #[weak]
+            item,
+            move |_, _| {
+                // Get mod folder
+                let parent_folder = match item.is_enabled() {
+                    true => crate::GAME_PATH.get().unwrap().join("Mods"),
+                    false => crate::GAME_PATH.get().unwrap().join("DisabledMods")
+                };
 
-            // Get mod path
-            let mod_path = parent_folder.join(item.filename().unwrap());
+                // Get mod path
+                let mod_path = parent_folder.join(item.filename().unwrap());
 
-            // Delete mod
-            thread::spawn(|| fs::remove_file(mod_path));
-        }));
+                // Delete mod
+                thread::spawn(|| fs::remove_file(mod_path));
+            }
+        ));
 
         // Create action group
         let actions = SimpleActionGroup::new();

@@ -69,107 +69,142 @@ pub fn create(app: &Application, model: &Model) -> ApplicationWindow {
     // Init run mod injector button
     let injector_button = builder.object::<Button>("RunInjector").unwrap();
 
-    injector_button.connect_clicked(clone!(#[weak] window, move |_| {
-        // Disable parent window
-        window.set_sensitive(false);
+    injector_button.connect_clicked(clone!(
+        #[weak]
+        window,
+        move |_| {
+            // Disable parent window
+            window.set_sensitive(false);
 
-        let (tx, rx) = mpsc::channel();
+            let (tx, rx) = mpsc::channel();
 
-        // Run injector
-        thread::spawn(move || {
-            tx.send(injector::run()).unwrap();
-        });
+            // Run injector
+            thread::spawn(move || {
+                tx.send(injector::run()).unwrap();
+            });
 
-        MainContext::default().spawn_local(clone!(#[weak] window, async move {
-            if let Ok(success) = rx.recv() {
-                if !success {
-                    // Create error dialog
-                    let err_dialog = AlertDialog::builder()
-                        .heading("Couldn't find default terminal.")
-                        .body("Set it using the $TERMINAL environment variable.")
-                        .default_response("ok")
-                        .close_response("ok")
-                        .build();
+            MainContext::default().spawn_local(clone!(
+                #[weak]
+                window,
+                async move {
+                    if let Ok(success) = rx.recv() {
+                        if !success {
+                            // Create error dialog
+                            let err_dialog = AlertDialog::builder()
+                                .heading("Couldn't find default terminal.")
+                                .body("Set it using the $TERMINAL environment variable.")
+                                .default_response("ok")
+                                .close_response("ok")
+                                .build();
 
-                    err_dialog.add_responses(&[("ok", "_Ok")]);
+                            err_dialog.add_responses(&[("ok", "_Ok")]);
 
-                    // WORKAROUND: AlertDialog's close response doesn't work
-                    err_dialog.connect_destroy(|dialog| {
-                        dialog.emit_by_name::<()>("response", &[&dialog.close_response()]);
-                    });
+                            // WORKAROUND: AlertDialog's close response doesn't work
+                            err_dialog.connect_destroy(|dialog| {
+                                dialog.emit_by_name::<()>("response", &[&dialog.close_response()]);
+                            });
 
-                    let signal = err_dialog.connect_response(None, clone!(#[weak] window, move |_, _| {
-                        // Re-enable parent
-                        window.set_sensitive(true);
-                    }));
+                            let signal = err_dialog.connect_response(
+                                None,
+                                clone!(
+                                    #[weak]
+                                    window,
+                                    move |_, _| {
+                                        // Re-enable parent
+                                        window.set_sensitive(true);
+                                    }
+                                )
+                            );
 
-                    // WORKAROUND: AlertDialog's close response doesn't work
-                    err_dialog.connect_response(None, move |d, _| {
-                        d.block_signal(&signal);
-                    });
+                            // WORKAROUND: AlertDialog's close response doesn't work
+                            err_dialog.connect_response(None, move |d, _| {
+                                d.block_signal(&signal);
+                            });
 
-                    err_dialog.present(Some(&window));
+                            err_dialog.present(Some(&window));
+                        }
+                        else {
+                            // Re-enable parent window
+                            window.set_sensitive(true);
+                        }
+                    }
                 }
-                else {
-                    // Re-enable parent window
-                    window.set_sensitive(true);
-                }
-            }
-        }));
-    }));
+            ));
+        }
+    ));
 
     // Init advanced options button
     let advanced_button = builder.object::<Button>("AdvancedOptions").unwrap();
 
-    advanced_button.connect_clicked(clone!(#[weak] window, move |_| {
-        // Disable main window
-        window.set_sensitive(false);
+    advanced_button.connect_clicked(clone!(
+        #[weak]
+        window,
+        move |_| {
+            // Disable main window
+            window.set_sensitive(false);
 
-        // Create advanced window
-        let advanced_window = advanced_window::create(&window);
+            // Create advanced window
+            let advanced_window = advanced_window::create(&window);
 
-        // Re-enable main window on close
-        advanced_window.connect_destroy(clone!(#[weak] window, move |_| {
-            window.set_sensitive(true);
-        }));
+            // Re-enable main window on close
+            advanced_window.connect_destroy(clone!(
+                #[weak]
+                window,
+                move |_| {
+                    window.set_sensitive(true);
+                }
+            ));
 
-        let settings_path = crate::GAME_PATH.get().unwrap().join("EternalModInjector Settings.txt");
+            let settings_path = crate::GAME_PATH
+                .get()
+                .unwrap()
+                .join("EternalModInjector Settings.txt");
 
-        // Check if settings file exists
-        if !settings_path.is_file() {
+            // Check if settings file exists
+            if !settings_path.is_file() {
+                // Create warning dialog
+                let warning_dialog = AlertDialog::builder()
+                    .heading("Mod injector settings file not found.")
+                    .body(
+                        "The mod injector settings section will not be available until the mod injector is \
+                         ran at least once."
+                    )
+                    .default_response("ok")
+                    .close_response("ok")
+                    .build();
 
-            // Create warning dialog
-            let warning_dialog = AlertDialog::builder()
-                .heading("Mod injector settings file not found.")
-                .body("The mod injector settings section will not be available until the mod injector is ran at least once.")
-                .default_response("ok")
-                .close_response("ok")
-                .build();
+                warning_dialog.add_responses(&[("ok", "_Ok")]);
 
-            warning_dialog.add_responses(&[("ok", "_Ok")]);
+                // WORKAROUND: AlertDialog's close response doesn't work
+                warning_dialog.connect_destroy(|dialog| {
+                    dialog.emit_by_name::<()>("response", &[&dialog.close_response()]);
+                });
 
-            // WORKAROUND: AlertDialog's close response doesn't work
-            warning_dialog.connect_destroy(|dialog| {
-                dialog.emit_by_name::<()>("response", &[&dialog.close_response()]);
-            });
+                let signal = warning_dialog.connect_response(
+                    None,
+                    clone!(
+                        #[weak]
+                        advanced_window,
+                        move |_, _| {
+                            // Show advanced window
+                            advanced_window.present();
+                        }
+                    )
+                );
 
-            let signal = warning_dialog.connect_response(None, clone!(#[weak] advanced_window, move |_, _| {
+                // WORKAROUND: AlertDialog's close response doesn't work
+                warning_dialog.connect_response(None, move |d, _| {
+                    d.block_signal(&signal);
+                });
+
+                warning_dialog.present(Some(&window));
+            }
+            else {
                 // Show advanced window
                 advanced_window.present();
-            }));
-
-            // WORKAROUND: AlertDialog's close response doesn't work
-            warning_dialog.connect_response(None, move |d, _| {
-                d.block_signal(&signal);
-            });
-
-            warning_dialog.present(Some(&window));
+            }
         }
-        else {
-            // Show advanced window
-            advanced_window.present();
-        }
-    }));
+    ));
 
     // Get listbox from builder
     let listbox = builder.object::<ListBox>("ModList").unwrap();
@@ -182,9 +217,13 @@ pub fn create(app: &Application, model: &Model) -> ApplicationWindow {
     // Init enable/disable all checkbox
     let enable_all_checkbox = builder.object::<CheckButton>("EnableAllCheckBox").unwrap();
 
-    enable_all_checkbox.connect_toggled(clone!(#[weak] model, move |checkbox| {
-        model.toggle_all(checkbox.is_active());
-    }));
+    enable_all_checkbox.connect_toggled(clone!(
+        #[weak]
+        model,
+        move |checkbox| {
+            model.toggle_all(checkbox.is_active());
+        }
+    ));
 
     // Set mod properties on selection
     listbox.connect_selected_rows_changed(move |listbox| {
@@ -352,66 +391,92 @@ pub fn get_game_path(parent_window: &ApplicationWindow, files: &[GioFile], model
         dialog.emit_by_name::<()>("response", &[&dialog.close_response()]);
     });
 
-    let signal = dialog.connect_response(None, clone!(#[weak] parent_window, #[weak] model, move |_, _| {
-        // Create file dialog to select folder
-        let file_dialog = FileDialog::builder()
-            .accept_label("Open")
-            .title("Open the game directory")
-            .build();
-
-        file_dialog.select_folder(Some(&parent_window), None::<&Cancellable>, clone!(#[weak] parent_window, #[weak] model, move |result| {
-            // Set game path
-            if let Ok(file) = result {
-                let path = file.path().unwrap();
-
-                if path.is_dir() && path.join("DOOMEternalx64vk.exe").is_file() {
-                    // Set game path
-                    crate::GAME_PATH.set(path).unwrap();
-                    save_game_path();
-
-                    // Check modding tools
-                    check_modding_tools(&parent_window);
-
-                    // Init watcher
-                    init_watcher(&model);
-                }
-            }
-
-            // Make sure game path is set now
-            if crate::GAME_PATH.get().is_none() {
-                // Create error dialog
-                let err_dialog = AlertDialog::builder()
-                    .heading("Can't find the game directory.")
-                    .body("Did you select/pass the correct directory?")
-                    .default_response("ok")
-                    .close_response("ok")
+    let signal = dialog.connect_response(
+        None,
+        clone!(
+            #[weak]
+            parent_window,
+            #[weak]
+            model,
+            move |_, _| {
+                // Create file dialog to select folder
+                let file_dialog = FileDialog::builder()
+                    .accept_label("Open")
+                    .title("Open the game directory")
                     .build();
 
-                err_dialog.add_responses(&[("ok", "_Ok")]);
+                file_dialog.select_folder(
+                    Some(&parent_window),
+                    None::<&Cancellable>,
+                    clone!(
+                        #[weak]
+                        parent_window,
+                        #[weak]
+                        model,
+                        move |result| {
+                            // Set game path
+                            if let Ok(file) = result {
+                                let path = file.path().unwrap();
 
-                // WORKAROUND: AlertDialog's close response doesn't work
-                err_dialog.connect_destroy(|dialog| {
-                    dialog.emit_by_name::<()>("response", &[&dialog.close_response()]);
-                });
+                                if path.is_dir() && path.join("DOOMEternalx64vk.exe").is_file() {
+                                    // Set game path
+                                    crate::GAME_PATH.set(path).unwrap();
+                                    save_game_path();
 
-                let signal = err_dialog.connect_response(None, clone!(#[weak] parent_window, move |_, _| {
-                    // Exit
-                    parent_window.close();
-                }));
+                                    // Check modding tools
+                                    check_modding_tools(&parent_window);
 
-                // WORKAROUND: AlertDialog's close response doesn't work
-                err_dialog.connect_response(None, move |d, _| {
-                    d.block_signal(&signal);
-                });
+                                    // Init watcher
+                                    init_watcher(&model);
+                                }
+                            }
 
-                err_dialog.present(Some(&parent_window));
+                            // Make sure game path is set now
+                            if crate::GAME_PATH.get().is_none() {
+                                // Create error dialog
+                                let err_dialog = AlertDialog::builder()
+                                    .heading("Can't find the game directory.")
+                                    .body("Did you select/pass the correct directory?")
+                                    .default_response("ok")
+                                    .close_response("ok")
+                                    .build();
+
+                                err_dialog.add_responses(&[("ok", "_Ok")]);
+
+                                // WORKAROUND: AlertDialog's close response doesn't work
+                                err_dialog.connect_destroy(|dialog| {
+                                    dialog.emit_by_name::<()>("response", &[&dialog.close_response()]);
+                                });
+
+                                let signal = err_dialog.connect_response(
+                                    None,
+                                    clone!(
+                                        #[weak]
+                                        parent_window,
+                                        move |_, _| {
+                                            // Exit
+                                            parent_window.close();
+                                        }
+                                    )
+                                );
+
+                                // WORKAROUND: AlertDialog's close response doesn't work
+                                err_dialog.connect_response(None, move |d, _| {
+                                    d.block_signal(&signal);
+                                });
+
+                                err_dialog.present(Some(&parent_window));
+                            }
+                            else {
+                                // Re-enable parent window
+                                parent_window.set_sensitive(true);
+                            }
+                        }
+                    )
+                );
             }
-            else {
-                // Re-enable parent window
-                parent_window.set_sensitive(true);
-            }
-        }));
-    }));
+        )
+    );
 
     // WORKAROUND: AlertDialog's close response doesn't work
     dialog.connect_response(None, move |d, _| {
@@ -490,10 +555,14 @@ fn check_modding_tools(parent_window: &ApplicationWindow) {
 
         let signal = err_dialog.connect_response(
             None,
-            clone!(#[weak] parent_window, move |_, _| {
-                // Exit
-                parent_window.close();
-            })
+            clone!(
+                #[weak]
+                parent_window,
+                move |_, _| {
+                    // Exit
+                    parent_window.close();
+                }
+            )
         );
 
         // WORKAROUND: AlertDialog's close response doesn't work
@@ -637,45 +706,69 @@ fn check_modding_tools(parent_window: &ApplicationWindow) {
 
 // Initialize the watcher on the game and mod directories
 fn init_watcher(model: &Model) {
-    thread::spawn(clone!(#[weak] model, move || {
-        let (tx, rx) = mpsc::channel();
+    thread::spawn(clone!(
+        #[weak]
+        model,
+        move || {
+            let (tx, rx) = mpsc::channel();
 
-        // Create the mod directories
-        let mods_dir = crate::GAME_PATH.get().unwrap().join("Mods");
-        let disabled_mods_dir = crate::GAME_PATH.get().unwrap().join("DisabledMods");
+            // Create the mod directories
+            let mods_dir = crate::GAME_PATH.get().unwrap().join("Mods");
+            let disabled_mods_dir = crate::GAME_PATH.get().unwrap().join("DisabledMods");
 
-        if !mods_dir.exists() {
-            fs::create_dir(&mods_dir).unwrap();
-        }
+            if !mods_dir.exists() {
+                fs::create_dir(&mods_dir).unwrap();
+            }
 
-        if !disabled_mods_dir.exists() {
-            fs::create_dir(&disabled_mods_dir).unwrap();
-        }
+            if !disabled_mods_dir.exists() {
+                fs::create_dir(&disabled_mods_dir).unwrap();
+            }
 
-        // Create watcher
-        let mut debouncer = notify_debouncer_mini::new_debouncer(Duration::from_millis(100), tx).unwrap();
+            // Create watcher
+            let mut debouncer = notify_debouncer_mini::new_debouncer(Duration::from_millis(100), tx).unwrap();
 
-        // Watch paths
-        debouncer.watcher().watch(&mods_dir, RecursiveMode::NonRecursive).unwrap();
-        debouncer.watcher().watch(&disabled_mods_dir, RecursiveMode::NonRecursive).unwrap();
-        let _ = debouncer.watcher().watch(&crate::GAME_PATH.get().unwrap().join("EternalModInjector Settings.txt"), RecursiveMode::NonRecursive);
+            // Watch paths
+            debouncer
+                .watcher()
+                .watch(&mods_dir, RecursiveMode::NonRecursive)
+                .unwrap();
+            debouncer
+                .watcher()
+                .watch(&disabled_mods_dir, RecursiveMode::NonRecursive)
+                .unwrap();
+            let _ = debouncer.watcher().watch(
+                &crate::GAME_PATH
+                    .get()
+                    .unwrap()
+                    .join("EternalModInjector Settings.txt"),
+                RecursiveMode::NonRecursive
+            );
 
-        // Get mods
-        let main_context = MainContext::default();
+            // Get mods
+            let main_context = MainContext::default();
 
-        main_context.spawn(clone!(#[weak] model, async move {
-            get_mods(&model);
-        }));
-
-        // Listen to watcher
-        for res in rx {
-            if res.is_ok() {
-                main_context.spawn(clone!(#[weak] model, async move {
+            main_context.spawn(clone!(
+                #[weak]
+                model,
+                async move {
                     get_mods(&model);
-                }));
+                }
+            ));
+
+            // Listen to watcher
+            for res in rx {
+                if res.is_ok() {
+                    main_context.spawn(clone!(
+                        #[weak]
+                        model,
+                        async move {
+                            get_mods(&model);
+                        }
+                    ));
+                }
             }
         }
-    }));
+    ));
 }
 
 // Check if mod is safe for online play
