@@ -20,7 +20,7 @@ jobs:
 
     steps:
       - name: Clone repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install dependencies
         run: |
@@ -49,30 +49,34 @@ jobs:
           path: ${{ github.workspace }}/target/release/eternal_mod_manager
 
   windows-test:
-    runs-on: ubuntu-latest
-
+    runs-on: windows-latest
+    defaults:
+      run:
+        shell: msys2 {0}
     steps:
-      - name: Clone repo
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
-      - name: Build with Docker image
-        uses: addnab/docker-run-action@v3
+      - uses: msys2/setup-msys2@v2
         with:
-            image: powerball253/gtk4-cross:rust-gtk-4.14
-            options: -v ${{ github.workspace }}:/mnt
-            run: |
-                source "$HOME/.cargo/env"
-                cargo build --target=x86_64-pc-windows-gnu --locked
-                cargo build --target=x86_64-pc-windows-gnu --release --locked
+          msystem: UCRT64
+          update: true
+          install: base-devel mingw-w64-ucrt-x86_64-toolchain mingw-w64-ucrt-x86_64-gtk4 mingw-w64-ucrt-x86_64-libadwaita
+
+      - name: Compile
+        run: |
+          export PATH=$PATH:`cygpath $USERPROFILE/.cargo/bin`
+          rustup default stable-x86_64-pc-windows-gnu
+          cargo build --target=x86_64-pc-windows-gnu --locked
+          cargo build --target=x86_64-pc-windows-gnu --release --locked
 
       - name: Upload debug artifact
         uses: actions/upload-artifact@v3
         with:
-          name: windows-debug
+          name: msys-debug
           path: ${{ github.workspace }}/target/x86_64-pc-windows-gnu/debug/eternal_mod_manager.exe
 
       - name: Upload release artifact
         uses: actions/upload-artifact@v3
         with:
-          name: windows-release
+          name: msys-release
           path: ${{ github.workspace }}/target/x86_64-pc-windows-gnu/release/eternal_mod_manager.exe
