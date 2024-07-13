@@ -93,7 +93,7 @@ jobs:
 
       - name: Setup Rust
         run: |
-          export PATH=$PATH:`cygpath $USERPROFILE/.cargo/bin`
+          echo `cygpath $USERPROFILE/.cargo/bin` >> $GITHUB_PATH
           rustup default stable-x86_64-pc-windows-gnu
 
       - name: Compile
