@@ -1,6 +1,6 @@
 name: eternalmodmanager
-base: core22
-version: '4.0.3'
+base: core24
+version: '4.1.0'
 summary: Mod manager for DOOM Eternal.
 description: A cross platform mod manager for DOOM Eternal, making it easier to set-up and install mods in both Windows and Linux.
 license: MIT

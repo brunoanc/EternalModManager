@@ -20,19 +20,20 @@
   </description>
   <screenshots>
     <screenshot type="default">
-      <image type="source">https://github.com/PowerBall253/EternalModManager/raw/main/screenshots/main_window.png</image>
+      <image type="source">https://github.com/brunoanc/EternalModManager/raw/main/screenshots/main_window.png</image>
     </screenshot>
     <screenshot>
-      <image type="source">https://github.com/PowerBall253/EternalModManager/raw/main/screenshots/advanced_window.png</image>
+      <image type="source">https://github.com/brunoanc/EternalModManager/raw/main/screenshots/advanced_window.png</image>
     </screenshot>
     <screenshot>
-      <image type="source">https://github.com/PowerBall253/EternalModManager/raw/main/screenshots/main_window_light.png</image>
+      <image type="source">https://github.com/brunoanc/EternalModManager/raw/main/screenshots/main_window_light.png</image>
     </screenshot>
     <screenshot>
-      <image type="source">https://github.com/PowerBall253/EternalModManager/raw/main/screenshots/advanced_window_light.png</image>
+      <image type="source">https://github.com/brunoanc/EternalModManager/raw/main/screenshots/advanced_window_light.png</image>
     </screenshot>
   </screenshots>
   <releases>
+    <release version="4.1.0" date="2024-07-13"/>
     <release version="4.0.3" date="2023-04-12"/>
     <release version="4.0.2" date="2023-04-12"/>
     <release version="4.0.1" date="2023-04-11"/>

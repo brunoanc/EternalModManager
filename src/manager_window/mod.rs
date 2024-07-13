@@ -33,7 +33,7 @@ pub fn create(app: &Application, model: &Model) -> ApplicationWindow {
     window.set_application(Some(app));
 
     // Set window title
-    let title = format!("EternalModManager v{} by PowerBall253", env!("CARGO_PKG_VERSION"));
+    let title = format!("EternalModManager v{} by Bruno Ancona", env!("CARGO_PKG_VERSION"));
     window.set_title(Some(&title));
 
     // Get screen height

@@ -1,11 +1,11 @@
 [package]
 name = "eternal_mod_manager"
 description = "Cross platform mod manager for DOOM Eternal."
-version = "4.0.3"
+version = "4.1.0"
 authors = ["Bruno Ancona <brunoanconasala@gmail.com>"]
 license = "MIT"
 repository = "https://github.com/brunoanc/EternalModManager"
-homepage = "https://beta.flathub.org/apps/com.powerball253.eternalmodmanager"
+homepage = "https://flathub.org/apps/com.powerball253.eternalmodmanager"
 edition = "2021"
 
 [dependencies]
