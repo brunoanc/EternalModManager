@@ -129,6 +129,7 @@ jobs:
           export PATH=$PATH:`cygpath $USERPROFILE/.cargo/bin`
           cargo build --target=x86_64-pc-windows-gnu --release --locked
 
+      # Source: https://github.com/MGlolenstine/gtk4-cross/blob/main/gtk4-cross-base-hub/package.sh
       - name: Package executable
         run: |
           export PATH=$PATH:`cygpath $USERPROFILE/.cargo/bin`:`realpath ./pe-util/build`
