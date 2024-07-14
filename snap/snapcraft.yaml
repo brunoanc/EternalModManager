@@ -12,14 +12,6 @@ package-repositories:
     ppa: aslatter/ppa
 
 parts:
-  rust-deps:
-    plugin: nil
-    override-build: |
-      if ! command -v rustup 2>/dev/null; then
-        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --no-modify-path --profile=minimal
-        export PATH="${HOME}/.cargo/bin:${PATH}"
-      fi
-
   desktop-files:
     plugin: dump
     source: snap/resources/
@@ -27,17 +19,16 @@ parts:
       '*.png': usr/share/icons/hicolor/256x256/apps/
       '*.appdata.xml': usr/share/metainfo/
 
+  alacritty:
+    plugin: nil
+    stage-packages:
+      - alacritty
+
   eternalmodmanager:
     plugin: rust
     source: .
-    after: [rust-deps]
     build-packages:
       - libssl-dev
-      - pkg-config
-    stage-packages:
-      - libadwaita-1-0
-      - libgtk-4-1
-      - alacritty
 
 apps:
   eternalmodmanager:
