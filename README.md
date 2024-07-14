@@ -21,7 +21,7 @@ A cross platform mod manager for DOOM Eternal, making it easier to set-up and in
 
 ### AppImage
 
-<a href='https://appimage.github.io/EternalModManager'>
+<a href='https://github.com/brunoanc/EternalModManager/releases/latest'>
     <img width='400' alt='Download as an AppImage' src='https://docs.appimage.org/_images/download-appimage-banner.svg' />
 </a>
 

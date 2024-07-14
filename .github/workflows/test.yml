@@ -37,13 +37,13 @@ jobs:
           PATH="${HOME}/.cargo/bin:${PATH}" cargo build --release
 
       - name: Upload debug artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ubuntu-debug
           path: ${{ github.workspace }}/target/debug/eternal_mod_manager
 
       - name: Upload release artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ubuntu-release
           path: ${{ github.workspace }}/target/release/eternal_mod_manager
@@ -70,13 +70,13 @@ jobs:
           cargo build --target=x86_64-pc-windows-gnu --release --locked
 
       - name: Upload debug artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: msys-debug
           path: ${{ github.workspace }}/target/x86_64-pc-windows-gnu/debug/eternal_mod_manager.exe
 
       - name: Upload release artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: msys-release
           path: ${{ github.workspace }}/target/x86_64-pc-windows-gnu/release/eternal_mod_manager.exe
