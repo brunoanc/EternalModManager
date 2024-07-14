@@ -2,10 +2,15 @@
 <!-- Copyright 2023 Bruno Ancona -->
 <component type="desktop-application">
   <id>io.github.brunoanc.eternalmodmanager</id>
+  <provides>
+    <id>com.powerball253.eternalmodmanager</id>
+  </provides>
+  <replaces>
+    <id>com.powerball253.eternalmodmanager</id>
+  </replaces>
   <launchable type="desktop-id">io.github.brunoanc.eternalmodmanager.desktop</launchable>
   <name>EternalModManager</name>
   <project_license>MIT</project_license>
-  <developer_name>Bruno Ancona</developer_name>
   <developer id="io.github.brunoanc">
     <name>Bruno Ancona</name>
   </developer>
