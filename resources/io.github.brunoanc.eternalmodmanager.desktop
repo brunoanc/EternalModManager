@@ -5,5 +5,5 @@ Type=Application
 Exec=eternal_mod_manager
 Terminal=false
 Categories=Utility;GTK;
-Icon=com.powerball253.eternalmodmanager
-StartupWMClass=com.powerball253.eternalmodmanager
+Icon=io.github.brunoanc.eternalmodmanager
+StartupWMClass=io.github.brunoanc.eternalmodmanager

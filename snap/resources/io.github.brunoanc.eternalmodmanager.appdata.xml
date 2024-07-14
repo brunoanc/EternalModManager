@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Copyright 2023 Bruno Ancona -->
+<!-- Copyright 2024 Bruno Ancona -->
 <component type="desktop-application">
-  <id>com.powerball253.eternalmodmanager</id>
-  <launchable type="desktop-id">com.powerball253.eternalmodmanager.desktop</launchable>
+  <id>io.github.brunoanc.eternalmodmanager</id>
+  <launchable type="desktop-id">eternalmodmanager.desktop</launchable>
   <name>EternalModManager</name>
   <project_license>MIT</project_license>
-  <developer_name>Bruno Ancona</developer_name>
   <developer id="io.github.brunoanc">
     <name>Bruno Ancona</name>
   </developer>
+  <developer_name>Bruno Ancona</developer_name>
   <summary>Mod manager for DOOM Eternal</summary>
   <metadata_license>CC0-1.0</metadata_license>
   <url type="homepage">https://github.com/brunoanc/EternalModManager</url>
@@ -89,5 +89,5 @@
     <release version="1.0.0" date="2021-07-06"/>
   </releases>
   <content_rating type="oars-1.1" />
-  <update_contact>brunoancolasala@gmail.com</update_contact>
+  <update_contact>brunoanconasala@gmail.com</update_contact>
 </component>

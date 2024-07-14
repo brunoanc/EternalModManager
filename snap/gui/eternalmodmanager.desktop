@@ -6,4 +6,4 @@ Exec=eternalmodmanager
 Terminal=false
 Categories=Utility;GTK;
 Icon=${SNAP}/meta/gui/eternalmodmanager.png
-StartupWMClass=com.powerball253.eternalmodmanager
+StartupWMClass=io.github.brunoanc.eternalmodmanager

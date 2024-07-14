@@ -55,4 +55,4 @@ slots:
   eternalmodmanager:
     interface: dbus
     bus: session
-    name: com.powerball253.eternalmodmanager
+    name: io.github.brunoanc.eternalmodmanager

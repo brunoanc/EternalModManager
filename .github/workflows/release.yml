@@ -39,12 +39,12 @@ jobs:
 
       - name: Create AppDir
         run: |
-          ./linuxdeploy-x86_64.AppImage --appdir AppDir --plugin gtk --executable target/release/eternal_mod_manager --icon-file resources/com.powerball253.eternalmodmanager.png --desktop-file resources/com.powerball253.eternalmodmanager.desktop
+          ./linuxdeploy-x86_64.AppImage --appdir AppDir --plugin gtk --executable target/release/eternal_mod_manager --icon-file resources/io.github.brunoanc.eternalmodmanager.png --desktop-file resources/io.github.brunoanc.eternalmodmanager.desktop
 
       - name: Add metainfo
         run: |
           mkdir -p AppDir/usr/share/metainfo
-          cp resources/com.powerball253.eternalmodmanager.appdata.xml AppDir/usr/share/metainfo
+          cp resources/io.github.brunoanc.eternalmodmanager.appdata.xml AppDir/usr/share/metainfo
 
       - name: Patch apprun hook
         run: |

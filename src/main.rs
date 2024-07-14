@@ -25,13 +25,13 @@ static GAME_PATH: OnceCell<PathBuf> = OnceCell::new();
 fn main() -> ExitCode {
     // Create app
     let app = Application::new(
-        Some("com.powerball253.eternalmodmanager"),
+        Some("io.github.brunoanc.eternalmodmanager"),
         ApplicationFlags::HANDLES_OPEN | ApplicationFlags::NON_UNIQUE
     );
 
     // Set app name on X11
-    glib::set_application_name("com.powerball253.eternalmodmanager");
-    glib::set_prgname(Some("com.powerball253.eternalmodmanager"));
+    glib::set_application_name("io.github.brunoanc.eternalmodmanager");
+    glib::set_prgname(Some("io.github.brunoanc.eternalmodmanager"));
 
     // Load css
     app.connect_startup(load_css);
@@ -57,7 +57,7 @@ fn activate_app(app: &Application, files: &[File]) {
     set_theme_windows();
 
     // Set window icon on X11
-    Window::set_default_icon_name("com.powerball253.eternalmodmanager");
+    Window::set_default_icon_name("io.github.brunoanc.eternalmodmanager");
 
     // Create list model
     let model = Model::new();
