@@ -5,7 +5,7 @@ version = "4.2.0"
 authors = ["Bruno Ancona <brunoanconasala@gmail.com>"]
 license = "MIT"
 repository = "https://github.com/brunoanc/EternalModManager"
-homepage = "https://flathub.org/apps/com.powerball253.eternalmodmanager"
+homepage = "https://flathub.org/apps/io.github.brunoanc.eternalmodmanager"
 edition = "2021"
 
 [dependencies]
