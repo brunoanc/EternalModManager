@@ -838,8 +838,8 @@ fn is_mod_online_safe(mod_zip: &mut ZipArchive<File>) -> bool {
             return false;
         }
 
-        // Allow modification of everything outside of generated/decls
-        if !mod_name.starts_with("generated/decls") {
+        // Allow modification of everything outside of generated/decls, except .entities files
+        if !mod_name.starts_with("generated/decls") && !mod_name.ends_with(".entities") {
             continue;
         }
 
@@ -899,7 +899,6 @@ fn is_mod_online_safe(mod_zip: &mut ZipArchive<File>) -> bool {
             "/weaponreticleswfinfo/",
             "/entitydef/light/",
             "/entitydef/fx",
-            "/entitydef/",
             "/impacteffect/",
             "/uiweapon/",
             "/globalinitialwarehouse/",
@@ -909,13 +908,14 @@ fn is_mod_online_safe(mod_zip: &mut ZipArchive<File>) -> bool {
             "/tooltip/",
             "/livetile/",
             "/tutorialevent/",
-            "/maps/game/dlc/",
-            "/maps/game/dlc2/",
-            "/maps/game/hub/",
-            "/maps/game/shell/",
-            "/maps/game/sp/",
-            "/maps/game/tutorials/",
-            "/decls/campaign"
+            "maps/game/dlc/",
+            "maps/game/dlc2/",
+            "maps/game/horde/",
+            "maps/game/hub/",
+            "maps/game/shell/",
+            "maps/game/sp/",
+            "maps/game/tutorials/",
+            "/decls/campaign/"
         ];
 
         if !ONLINE_SAFE_KEYWORDS.iter().any(|&k| mod_name.contains(k)) && is_modifying_unsafe_resource {
