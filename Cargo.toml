@@ -9,8 +9,8 @@ homepage = "https://flathub.org/apps/io.github.brunoanc.eternalmodmanager"
 edition = "2024"
 
 [dependencies]
-adw = { version = "0.8.0", package = "libadwaita", features = ["v1_7"] }
-gtk = { version = "0.10.1", package = "gtk4", features = ["gnome_48"] }
+adw = { version = "0.8.0", package = "libadwaita", features = ["v1_5"] }
+gtk = { version = "0.10.1", package = "gtk4", features = ["v4_14"] }
 reqwest = { version = "0.12.23", features = ["blocking"] }
 zip = { version = "5.1.1", default-features = false, features = ["deflate"] }
 notify-debouncer-mini = { version =  "0.7.0", default-features = false }

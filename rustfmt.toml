@@ -1,6 +1,6 @@
 condense_wildcard_suffixes = true
 control_brace_style = "ClosingNextLine"
-edition = "2021"
+edition = "2024"
 enum_discrim_align_threshold = 25
 fn_params_layout = "Compressed"
 format_strings = true
