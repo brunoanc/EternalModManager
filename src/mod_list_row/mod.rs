@@ -1,15 +1,16 @@
 mod imp;
 
 use gtk::{
-    glib::{wrapper, Object},
-    Widget
+    Widget,
+    glib::{Object, wrapper}
 };
 
 use crate::mod_data::ModData;
 
 wrapper! {
     pub struct ListBoxRow(ObjectSubclass<imp::ListBoxRow>)
-        @extends Widget, gtk::ListBoxRow;
+        @extends Widget, gtk::ListBoxRow,
+        @implements gtk::Buildable, gtk::ConstraintTarget, gtk::Accessible, gtk::Actionable;
 }
 
 impl ListBoxRow {

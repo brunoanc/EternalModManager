@@ -2,7 +2,7 @@ use std::sync::RwLock;
 
 use adw::prelude::*;
 use gtk::{
-    gio::{subclass::prelude::*, ListModel},
+    gio::{ListModel, subclass::prelude::*},
     glib::{self, Object, Type}
 };
 use im::Vector;

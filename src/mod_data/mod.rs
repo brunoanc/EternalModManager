@@ -1,6 +1,6 @@
 mod imp;
 
-use gtk::glib::{wrapper, Object};
+use gtk::glib::{Object, wrapper};
 use serde_json::Value;
 
 wrapper! {

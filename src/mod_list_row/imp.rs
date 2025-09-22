@@ -2,11 +2,11 @@ use std::{cell::RefCell, fs, path::Path, thread};
 
 use adw::{prelude::*, subclass::prelude::*};
 use gtk::{
+    Builder, CheckButton, EventSequenceState, FileDialog, FileFilter, GestureClick, Grid, Label, PopoverMenu,
+    Window,
     gdk::{self, Rectangle},
     gio::{Cancellable, File as GioFile, ListStore, MenuModel, SimpleAction, SimpleActionGroup},
-    glib::{self, clone, ParamSpec, Properties, Value},
-    Builder, CheckButton, EventSequenceState, FileDialog, FileFilter, GestureClick, Grid, Label, PopoverMenu,
-    Window
+    glib::{self, ParamSpec, Properties, Value, clone}
 };
 
 use crate::mod_data::ModData;

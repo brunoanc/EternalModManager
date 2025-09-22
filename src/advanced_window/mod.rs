@@ -7,11 +7,11 @@ use std::{
     thread
 };
 
-use adw::{prelude::*, AlertDialog, ResponseAppearance};
+use adw::{AlertDialog, ResponseAppearance, prelude::*};
 use arboard::Clipboard;
 use gtk::{
-    glib::{self, clone, MainContext},
-    ApplicationWindow, Box, Builder, Button, CheckButton, Entry
+    ApplicationWindow, Box, Builder, Button, CheckButton, Entry,
+    glib::{self, MainContext, clone}
 };
 use walkdir::WalkDir;
 

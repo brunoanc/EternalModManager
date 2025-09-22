@@ -3,7 +3,7 @@ mod imp;
 use adw::{prelude::*, subclass::prelude::*};
 use gtk::{
     gio::ListModel,
-    glib::{wrapper, Object}
+    glib::{Object, wrapper}
 };
 use im::Vector;
 

@@ -7,16 +7,19 @@ use std::{
     time::Duration
 };
 
-use adw::{prelude::*, AlertDialog, Application};
+use adw::{AlertDialog, Application, prelude::*};
 use gtk::{
+    ApplicationWindow, Builder, Button, CheckButton, DropTarget, FileDialog, Label, ListBox, ScrolledWindow,
+    Widget,
     gdk::{Display, DragAction, FileList, Monitor},
     gio::{Cancellable, File as GioFile},
-    glib::{self, clone, KeyFile, KeyFileFlags, MainContext},
-    ApplicationWindow, Builder, Button, CheckButton, DropTarget, FileDialog, Label, ListBox, ScrolledWindow,
-    Widget
+    glib::{self, KeyFile, KeyFileFlags, MainContext, clone}
 };
 use im::Vector;
-use notify::RecursiveMode;
+use notify_debouncer_mini::{
+    Config,
+    notify::{self, RecursiveMode}
+};
 use serde_json::{Result, Value};
 use zip::ZipArchive;
 
@@ -725,7 +728,13 @@ fn init_watcher(model: &Model) {
             }
 
             // Create watcher
-            let mut debouncer = notify_debouncer_mini::new_debouncer(Duration::from_millis(100), tx).unwrap();
+            let backend_config = notify::Config::default().with_poll_interval(Duration::from_millis(100));
+            let debouncer_config = Config::default()
+                .with_timeout(Duration::from_millis(100))
+                .with_notify_config(backend_config);
+            let mut debouncer =
+                notify_debouncer_mini::new_debouncer_opt::<_, notify::PollWatcher>(debouncer_config, tx)
+                    .unwrap();
 
             // Watch paths
             debouncer

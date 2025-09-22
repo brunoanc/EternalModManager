@@ -9,12 +9,12 @@ mod model;
 
 use std::path::PathBuf;
 
-use adw::{prelude::*, Application};
+use adw::{Application, prelude::*};
 use gtk::{
+    CssProvider, Window,
     gdk::Display,
     gio::{ApplicationFlags, File},
-    glib::{self, ExitCode},
-    CssProvider, Window
+    glib::{self, ExitCode}
 };
 use model::Model;
 use once_cell::sync::OnceCell;
