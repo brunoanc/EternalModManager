@@ -20,7 +20,7 @@ jobs:
 
     steps:
       - name: Clone repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Install dependencies
         run: |
@@ -37,13 +37,13 @@ jobs:
           PATH="${HOME}/.cargo/bin:${PATH}" cargo build --release
 
       - name: Upload debug artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ubuntu-debug
           path: ${{ github.workspace }}/target/debug/eternal_mod_manager
 
       - name: Upload release artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: ubuntu-release
           path: ${{ github.workspace }}/target/release/eternal_mod_manager
@@ -54,7 +54,7 @@ jobs:
       run:
         shell: msys2 {0}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - uses: msys2/setup-msys2@v2
         with:
@@ -70,13 +70,13 @@ jobs:
           cargo build --target=x86_64-pc-windows-gnu --release --locked
 
       - name: Upload debug artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: msys-debug
           path: ${{ github.workspace }}/target/x86_64-pc-windows-gnu/debug/eternal_mod_manager.exe
 
       - name: Upload release artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: msys-release
           path: ${{ github.workspace }}/target/x86_64-pc-windows-gnu/release/eternal_mod_manager.exe

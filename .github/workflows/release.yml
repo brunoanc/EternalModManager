@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - name: Clone repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Install dependencies
         run: |
@@ -34,7 +34,7 @@ jobs:
         run: |
           wget -c "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage"
           wget -c "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage"
-          wget -c "https://raw.githubusercontent.com/linuxdeploy/linuxdeploy-plugin-gtk/ca4ae0999883fc359c87acb327ce2afaf9da8c91/linuxdeploy-plugin-gtk.sh"
+          wget -c "https://raw.githubusercontent.com/linuxdeploy/linuxdeploy-plugin-gtk/refs/heads/master/linuxdeploy-plugin-gtk.sh"
           chmod +x appimagetool-x86_64.AppImage linuxdeploy-x86_64.AppImage linuxdeploy-plugin-gtk.sh
 
       - name: Create AppDir
@@ -72,7 +72,7 @@ jobs:
 
     steps:
       - name: Clone repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Build snap
         uses: snapcore/action-build@v1
@@ -96,7 +96,7 @@ jobs:
       run:
         shell: msys2 {0}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - uses: msys2/setup-msys2@v2
         with:
