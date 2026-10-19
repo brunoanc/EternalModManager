@@ -7,7 +7,7 @@ pub mod mod_data;
 mod mod_list_row;
 mod model;
 
-use std::path::PathBuf;
+use std::{path::PathBuf, sync::OnceLock};
 
 use adw::{Application, prelude::*};
 use gtk::{
@@ -17,16 +17,15 @@ use gtk::{
     glib::{self, ExitCode}
 };
 use model::Model;
-use once_cell::sync::OnceCell;
 
 // DOOM Eternal game path
-static GAME_PATH: OnceCell<PathBuf> = OnceCell::new();
+static GAME_PATH: OnceLock<PathBuf> = OnceLock::new();
 
 fn main() -> ExitCode {
     // Create app
     let app = Application::new(
         Some("io.github.brunoanc.eternalmodmanager"),
-        ApplicationFlags::HANDLES_OPEN | ApplicationFlags::NON_UNIQUE
+        ApplicationFlags::HANDLES_OPEN
     );
 
     // Set app name on X11
@@ -37,13 +36,23 @@ fn main() -> ExitCode {
     app.connect_startup(load_css);
 
     // Activate callback
-    app.connect_activate(|a| {
-        activate_app(a, &[]);
+    app.connect_activate(|app| {
+        if let Some(window) = app.windows().first() {
+            window.present();
+            return;
+        }
+
+        activate_app(app, &[]);
     });
 
     // Handle arguments
-    app.connect_open(|a, f, _| {
-        activate_app(a, f);
+    app.connect_open(|app, files, _| {
+        if let Some(window) = app.windows().first() {
+            window.present();
+            return;
+        }
+
+        activate_app(app, files);
     });
 
     // Run app

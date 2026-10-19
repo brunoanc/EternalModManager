@@ -7,7 +7,7 @@ on:
 
 jobs:
   appimage-build:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
 
     defaults:
       run:
@@ -15,12 +15,12 @@ jobs:
 
     steps:
       - name: Clone repo
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Install dependencies
         run: |
           sudo apt -y update
-          sudo apt -y install build-essential kmod curl wget libssl-dev libadwaita-1-dev fuse file libfuse2
+          sudo apt -y install build-essential kmod curl wget libssl-dev libadwaita-1-dev fuse file libfuse2t64
 
       - name: Install Rust
         run: |
@@ -28,7 +28,7 @@ jobs:
 
       - name: Build project
         run: |
-          PATH="${HOME}/.cargo/bin:${PATH}" cargo build --release
+          PATH="${HOME}/.cargo/bin:${PATH}" cargo build --release --locked
 
       - name: Install appimagetool, linuxdeploy and gtk plugin
         run: |
@@ -68,15 +68,17 @@ jobs:
           tag: ${{ github.ref }}
 
   snap-build:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
 
     steps:
       - name: Clone repo
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Build snap
         uses: snapcore/action-build@v1
         id: snapcraft
+        with:
+          snapcraft-channel: 9.x/candidate
 
       - name: Upload snap
         uses: snapcore/action-publish@v1
@@ -96,7 +98,7 @@ jobs:
       run:
         shell: msys2 {0}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - uses: msys2/setup-msys2@v2
         with:

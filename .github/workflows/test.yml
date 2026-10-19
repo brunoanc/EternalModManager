@@ -12,7 +12,7 @@ env:
 
 jobs:
   ubuntu-test:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
 
     defaults:
       run:
@@ -20,12 +20,12 @@ jobs:
 
     steps:
       - name: Clone repo
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Install dependencies
         run: |
           sudo apt -y update
-          sudo apt -y install build-essential kmod curl wget libssl-dev libadwaita-1-dev fuse file libfuse2
+          sudo apt -y install build-essential kmod curl wget libssl-dev libadwaita-1-dev fuse file libfuse2t64
 
       - name: Install Rust
         run: |
@@ -33,20 +33,38 @@ jobs:
 
       - name: Build project
         run: |
-          PATH="${HOME}/.cargo/bin:${PATH}" cargo build
-          PATH="${HOME}/.cargo/bin:${PATH}" cargo build --release
+          PATH="${HOME}/.cargo/bin:${PATH}" cargo build --locked
+          PATH="${HOME}/.cargo/bin:${PATH}" cargo build --locked --release
 
       - name: Upload debug artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: ubuntu-debug
           path: ${{ github.workspace }}/target/debug/eternal_mod_manager
 
       - name: Upload release artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: ubuntu-release
           path: ${{ github.workspace }}/target/release/eternal_mod_manager
+
+  snap-build-test:
+    runs-on: ubuntu-26.04
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Build Snap
+        uses: snapcore/action-build@v1
+        id: snapcraft
+        with:
+          snapcraft-channel: 9.x/candidate
+
+      - name: Upload Snap artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: eternalmodmanager-snap
+          path: ${{ steps.snapcraft.outputs.snap }}
 
   windows-test:
     runs-on: windows-latest
@@ -54,7 +72,7 @@ jobs:
       run:
         shell: msys2 {0}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - uses: msys2/setup-msys2@v2
         with:
@@ -70,13 +88,13 @@ jobs:
           cargo build --target=x86_64-pc-windows-gnu --release --locked
 
       - name: Upload debug artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: msys-debug
           path: ${{ github.workspace }}/target/x86_64-pc-windows-gnu/debug/eternal_mod_manager.exe
 
       - name: Upload release artifact
-        uses: actions/upload-artifact@v6
+        uses: actions/upload-artifact@v7
         with:
           name: msys-release
           path: ${{ github.workspace }}/target/x86_64-pc-windows-gnu/release/eternal_mod_manager.exe

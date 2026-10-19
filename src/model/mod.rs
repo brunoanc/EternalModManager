@@ -5,7 +5,7 @@ use gtk::{
     gio::ListModel,
     glib::{Object, wrapper}
 };
-use im::Vector;
+use imbl::Vector;
 
 use crate::mod_data::ModData;
 

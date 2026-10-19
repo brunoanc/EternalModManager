@@ -15,7 +15,7 @@ use gtk::{
     gio::{Cancellable, File as GioFile},
     glib::{self, KeyFile, KeyFileFlags, MainContext, clone}
 };
-use im::Vector;
+use imbl::Vector;
 use notify_debouncer_mini::{
     Config,
     notify::{self, RecursiveMode}
@@ -787,6 +787,10 @@ fn is_mod_online_safe(mod_zip: &mut ZipArchive<File>) -> bool {
 
     // Iterate through zip's entries
     for mod_file in mod_zip.file_names() {
+        let Ok(mod_file) = mod_file else {
+            return false;
+        };
+
         let mod_file_entry = mod_file.to_lowercase();
 
         // Skip directories
@@ -827,7 +831,7 @@ fn is_mod_online_safe(mod_zip: &mut ZipArchive<File>) -> bool {
 
         // Save AssetsInfo JSON files to be handled later
         if mod_file_entry.starts_with("eternalmod/assetsinfo") && mod_file_entry.ends_with(".json") {
-            assets_info_jsons.push(mod_file.to_owned());
+            assets_info_jsons.push(mod_file.into_owned());
         }
 
         // Check if mod is modifying an online-unsafe resource
