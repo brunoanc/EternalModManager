@@ -54,17 +54,21 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      - name: Check Snapcraft channels
+        run: snap info snapcraft
+
       - name: Build Snap
         uses: snapcore/action-build@v1
         id: snapcraft
         with:
-          snapcraft-channel: 9.x/candidate
+          snapcraft-channel: 9.x/edge
 
       - name: Upload Snap artifact
         uses: actions/upload-artifact@v7
         with:
           name: eternalmodmanager-snap
           path: ${{ steps.snapcraft.outputs.snap }}
+          if-no-files-found: error
 
   windows-test:
     runs-on: windows-latest
