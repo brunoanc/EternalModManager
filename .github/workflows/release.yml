@@ -78,7 +78,7 @@ jobs:
         uses: snapcore/action-build@v1
         id: snapcraft
         with:
-          snapcraft-channel: 9.x/candidate
+          snapcraft-channel: latest/candidate
 
       - name: Upload snap
         uses: snapcore/action-publish@v1
